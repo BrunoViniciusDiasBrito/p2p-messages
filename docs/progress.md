@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **30%**.
+Estimated completion against the full instruction set: **38%**.
 
 ## Completed
 
@@ -10,6 +10,7 @@ Estimated completion against the full instruction set: **30%**.
 - Initial SQLite schema including outbox/inbox tables.
 - Initial threat model, ADRs, limitations, architecture, protocol, integration, and SDK docs.
 - Initial Messaging domain/application slice for direct text messages with accepted-contact enforcement, encryption/signing ports, inbox deduplication model, outbox queueing, and retry backoff use case.
+- Initial Groups domain/application slice for group creation, accepted-contact invitations, invitation acceptance/rejection, member removal, key epoch rotation, and MLS/OpenMLS adapter ports.
 
 ## Remaining major work
 
@@ -17,7 +18,7 @@ Estimated completion against the full instruction set: **30%**.
 - SQLite repository implementations.
 - In-memory and libp2p local node integration tests.
 - P2P discovery/transports: mDNS, DHT/Kademlia, secure transport, optional relays.
-- Groups context and MLS/OpenMLS adapter.
+- Concrete group-message encryption and MLS/OpenMLS adapter implementation.
 - Local REST/OpenAPI/SSE daemon implementation with scoped tokens/rate limits.
 - SDK generated from OpenAPI.
 - Tauri 2 + Vue desktop UI.

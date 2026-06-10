@@ -11,3 +11,6 @@ export * from './messaging/value-objects.js';
 export * from './messaging/conversation.js';
 export * from './messaging/message.js';
 export * from './messaging/mailbox.js';
+export * from './groups/value-objects.js';
+export * from './groups/group.js';
+export * from './groups/group-invitation.js';

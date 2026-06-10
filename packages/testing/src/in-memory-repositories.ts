@@ -61,3 +61,19 @@ export class InMemoryInboxRepository implements InboxRepository {
   async save(entry: InboxEntry): Promise<void> { this.rows.set(entry.snapshot.envelopeId, entry); }
   async exists(envelopeId: string): Promise<boolean> { return this.rows.has(envelopeId); }
 }
+import { Group, GroupId, GroupInvitation } from '@peercomms/domain';
+import { GroupInvitationRepository, GroupRepository } from '@peercomms/application';
+
+export class InMemoryGroupRepository implements GroupRepository {
+  private readonly rows = new Map<string, Group>();
+  async save(group: Group): Promise<void> { this.rows.set(group.snapshot.id.value, group); }
+  async findById(groupId: GroupId): Promise<Group | null> { return this.rows.get(groupId.value) ?? null; }
+  async list(): Promise<Group[]> { return [...this.rows.values()]; }
+}
+
+export class InMemoryGroupInvitationRepository implements GroupInvitationRepository {
+  private readonly rows = new Map<string, GroupInvitation>();
+  async save(invitation: GroupInvitation): Promise<void> { this.rows.set(invitation.snapshot.id.value, invitation); }
+  async findById(invitationId: string): Promise<GroupInvitation | null> { return this.rows.get(invitationId) ?? null; }
+  async list(): Promise<GroupInvitation[]> { return [...this.rows.values()]; }
+}

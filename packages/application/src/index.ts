@@ -8,3 +8,5 @@ export * from './identity/import-recovery-bundle-use-case.js';
 export * from './contacts/contact-use-cases.js';
 export * from './ports/messaging-ports.js';
 export * from './messaging/messaging-use-cases.js';
+export * from './ports/group-ports.js';
+export * from './groups/group-use-cases.js';

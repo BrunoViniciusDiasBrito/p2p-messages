@@ -7,3 +7,5 @@
 5. Group messaging will use an MLS/OpenMLS adapter boundary; temporary group tests may mock crypto but production group crypto must use a reviewed MLS implementation.
 6. Envelopes are signed and include nonces, timestamps, IDs, and optional expiry to support replay protection.
 7. Logs must be sanitized and must not include private keys, tokens, plaintext messages, or recovery secrets.
+
+8. Group membership use cases depend on a `GroupCryptoPort` for welcome creation, welcome acceptance, and epoch rotation; the current code deliberately does not implement group encryption itself.
