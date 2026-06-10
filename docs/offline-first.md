@@ -15,3 +15,8 @@ No global delivery is promised without connectivity, local proximity, or optiona
 ## Implemented messaging slice
 
 Direct messages are first saved locally, encrypted through an application crypto port, wrapped in a signed transport envelope, and queued in the outbox as `queued_until_reachable`. `RetryOutboxMessagesUseCase` publishes due outbox entries through a transport port and schedules exponential backoff when a peer is unreachable. Inbound envelopes are deduplicated by `envelopeId` before decryption and message persistence.
+
+
+## SQLite persistence adapter foundation
+
+The storage package now implements repository adapters for identities, contacts, conversations, messages, outbox, inbox, groups, and group invitations through a generic `SqliteDatabasePort`. The daemon still needs to compose this port with a concrete open-source SQLite driver and run migrations at startup.

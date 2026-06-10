@@ -30,12 +30,12 @@ CREATE TABLE IF NOT EXISTS contact_requests (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS conversations (id TEXT PRIMARY KEY, type TEXT NOT NULL, peer_id TEXT, group_id TEXT, updated_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, conversation_id TEXT NOT NULL, sender_peer_id TEXT NOT NULL, status TEXT NOT NULL, encrypted_payload TEXT NOT NULL, created_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS groups (id TEXT PRIMARY KEY, name TEXT NOT NULL, key_epoch INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS group_members (group_id TEXT NOT NULL, peer_id TEXT NOT NULL, role TEXT NOT NULL, joined_at TEXT NOT NULL, PRIMARY KEY(group_id, peer_id));
-CREATE TABLE IF NOT EXISTS group_invitations (id TEXT PRIMARY KEY, group_id TEXT NOT NULL, peer_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS outbox (envelope_id TEXT PRIMARY KEY, to_peer_id TEXT, envelope_json TEXT NOT NULL, status TEXT NOT NULL, retry_count INTEGER NOT NULL DEFAULT 0, next_attempt_at TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS conversations (id TEXT PRIMARY KEY, type TEXT NOT NULL, peer_id TEXT, group_id TEXT, lamport_clock INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, conversation_id TEXT NOT NULL, sender_peer_id TEXT NOT NULL, recipient_peer_id TEXT, status TEXT NOT NULL, encrypted_payload TEXT, lamport_clock INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS groups (id TEXT PRIMARY KEY, name TEXT NOT NULL, key_epoch INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS group_members (group_id TEXT NOT NULL, peer_id TEXT NOT NULL, role TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'active', joined_at TEXT NOT NULL, removed_at TEXT, PRIMARY KEY(group_id, peer_id));
+CREATE TABLE IF NOT EXISTS group_invitations (id TEXT PRIMARY KEY, group_id TEXT NOT NULL, inviter_peer_id TEXT NOT NULL, invitee_peer_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS outbox (envelope_id TEXT PRIMARY KEY, to_peer_id TEXT, envelope_json TEXT NOT NULL, status TEXT NOT NULL, retry_count INTEGER NOT NULL DEFAULT 0, next_attempt_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS inbox (envelope_id TEXT PRIMARY KEY, from_peer_id TEXT NOT NULL, envelope_json TEXT NOT NULL, received_at TEXT NOT NULL, processed_at TEXT);
 CREATE TABLE IF NOT EXISTS notifications (id TEXT PRIMARY KEY, type TEXT NOT NULL, title TEXT NOT NULL, body TEXT, read_at TEXT, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS external_apps (id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL, revoked_at TEXT);

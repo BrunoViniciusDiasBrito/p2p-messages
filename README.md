@@ -21,6 +21,7 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - Initial SDK client shape for direct messages and SSE events.
 - Initial direct-message domain/application slice with accepted-contact enforcement, crypto/signature ports, persistent outbox model, inbox deduplication model, and retry backoff use case.
 - Initial group domain/application slice with group creation, invitations for accepted contacts, invite acceptance/rejection, member removal, key epoch rotation, and MLS/OpenMLS crypto port boundaries.
+- Initial SQLite repository adapters for identity, contacts, messaging mailboxes, groups, and invitations behind a generic local database port.
 
 ## Connectivity honesty
 
@@ -56,12 +57,12 @@ See:
 
 ## Progress
 
-Estimated completion against the full instruction set: **38%**. See [implementation progress](docs/progress.md).
+Estimated completion against the full instruction set: **46%**. See [implementation progress](docs/progress.md).
 
 ## Prioritized TODO
 
 1. Implement audited crypto adapter and encrypted local keystore integration.
-2. Implement SQLite repository adapters for identity, contacts, conversations, messages, outbox, and inbox.
+2. Compose storage adapters with a concrete open-source SQLite driver and migration runner in the daemon.
 3. Add audited crypto adapter and encrypted local keystore integration tests.
 4. Add in-memory two-node transport integration tests for direct messages.
 5. Add libp2p adapter with mDNS local discovery and optional DHT/bootstrap configuration.

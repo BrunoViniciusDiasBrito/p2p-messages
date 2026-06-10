@@ -10,5 +10,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests",
     "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@peercomms/application": "workspace:*",
+    "@peercomms/domain": "workspace:*"
   }
 }

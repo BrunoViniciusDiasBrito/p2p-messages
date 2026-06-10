@@ -1,10 +1,10 @@
 # PeerComms prioritized technical TODO
 
-Current estimated completion: **38%**.
+Current estimated completion: **46%**.
 
 ## Phase 3
 
-- Implement SQLite repositories for conversations, messages, outbox, and inbox.
+- Compose SQLite repositories with a concrete driver such as better-sqlite3/sql.js/libsql-compatible local mode and a migration runner.
 - Add crypto adapter using audited open-source libraries.
 - Add direct-message in-memory two-node transport integration test.
 - Add signed envelope verification integration tests and replay/deduplication tests.
