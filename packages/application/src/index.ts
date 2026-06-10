@@ -6,3 +6,5 @@ export * from './identity/create-local-identity-use-case.js';
 export * from './identity/export-public-identity-use-case.js';
 export * from './identity/import-recovery-bundle-use-case.js';
 export * from './contacts/contact-use-cases.js';
+export * from './ports/messaging-ports.js';
+export * from './messaging/messaging-use-cases.js';

@@ -1,11 +1,13 @@
 # PeerComms prioritized technical TODO
 
+Current estimated completion: **30%**.
+
 ## Phase 3
 
-- Implement direct message entities and use cases.
-- Add persistent outbox/inbox repositories.
+- Implement SQLite repositories for conversations, messages, outbox, and inbox.
 - Add crypto adapter using audited open-source libraries.
-- Add direct-message in-memory transport integration test.
+- Add direct-message in-memory two-node transport integration test.
+- Add signed envelope verification integration tests and replay/deduplication tests.
 
 ## Phase 4
 

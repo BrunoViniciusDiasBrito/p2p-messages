@@ -1,6 +1,6 @@
 # PeerComms
 
-PeerComms is a decentralized, offline-first, peer-to-peer communication platform designed with DDD, Clean Architecture, and ports/adapters. This repository currently contains the first incremental delivery: monorepo foundation, initial domain model, identity/contact use cases, protocol schemas, SQLite migration, unit tests, and security/architecture documentation.
+PeerComms is a decentralized, offline-first, peer-to-peer communication platform designed with DDD, Clean Architecture, and ports/adapters. This repository currently contains the first incremental deliveries: monorepo foundation, initial domain model, identity/contact use cases, an offline-first direct messaging slice, protocol schemas, SQLite migration, unit tests, and security/architecture documentation.
 
 ## Proposed product shape
 
@@ -19,6 +19,7 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - Versioned Zod transport envelope schema.
 - Initial SQLite migration for identity, contacts, messages, groups, outbox/inbox, notifications, integrations, and network peers.
 - Initial SDK client shape for direct messages and SSE events.
+- Initial direct-message domain/application slice with accepted-contact enforcement, crypto/signature ports, persistent outbox model, inbox deduplication model, and retry backoff use case.
 
 ## Connectivity honesty
 
@@ -52,13 +53,18 @@ See:
 - [Crypto decisions](docs/security/crypto-decisions.md)
 - [Limitations](docs/limitations.md)
 
+## Progress
+
+Estimated completion against the full instruction set: **30%**. See [implementation progress](docs/progress.md).
+
 ## Prioritized TODO
 
 1. Implement audited crypto adapter and encrypted local keystore integration.
-2. Implement SQLite repository adapters for identity and contacts.
-3. Implement direct-message outbox/inbox use cases and in-memory transport tests.
-4. Add libp2p adapter with mDNS local discovery and optional DHT/bootstrap configuration.
-5. Implement local REST/SSE API on `127.0.0.1` with token scopes and rate limits.
-6. Expand SDK from documented OpenAPI contracts.
-7. Add group context with MLS/OpenMLS adapter boundary.
-8. Scaffold Tauri/Vue desktop UI after daemon APIs stabilize.
+2. Implement SQLite repository adapters for identity, contacts, conversations, messages, outbox, and inbox.
+3. Add audited crypto adapter and encrypted local keystore integration tests.
+4. Add in-memory two-node transport integration tests for direct messages.
+5. Add libp2p adapter with mDNS local discovery and optional DHT/bootstrap configuration.
+6. Implement local REST/SSE API on `127.0.0.1` with token scopes and rate limits.
+7. Expand SDK from documented OpenAPI contracts.
+8. Add group context with MLS/OpenMLS adapter boundary.
+9. Scaffold Tauri/Vue desktop UI after daemon APIs stabilize.

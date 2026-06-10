@@ -10,3 +10,8 @@ Reachability states:
 - `queued until reachable`
 
 No global delivery is promised without connectivity, local proximity, or optional decentralized/community relay nodes.
+
+
+## Implemented messaging slice
+
+Direct messages are first saved locally, encrypted through an application crypto port, wrapped in a signed transport envelope, and queued in the outbox as `queued_until_reachable`. `RetryOutboxMessagesUseCase` publishes due outbox entries through a transport port and schedules exponential backoff when a peer is unreachable. Inbound envelopes are deduplicated by `envelopeId` before decryption and message persistence.

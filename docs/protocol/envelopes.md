@@ -20,3 +20,8 @@ Protocol version `1.0` defines a minimal routing envelope validated in `packages
 ```
 
 Sensitive payloads must be encrypted. The envelope keeps only routing metadata required for decentralized delivery. Envelopes are idempotent by `envelopeId` and deduplicated in inbox/outbox storage.
+
+
+## Direct message payload
+
+The direct-message application slice treats `payload` as encrypted ciphertext produced by an audited crypto adapter behind a port. The plaintext body is not placed in transport envelopes. The unsigned envelope is canonicalized before signing by the crypto adapter.
