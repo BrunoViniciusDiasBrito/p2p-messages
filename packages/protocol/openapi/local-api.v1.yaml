@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  title: PeerComms Local API
+  version: 1.0.0
+  description: Loopback-only API for local integrations. This is not a central backend API.
+servers:
+  - url: http://127.0.0.1:{port}
+    variables:
+      port:
+        default: "17345"
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    RegisterAppRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+    RegisterAppResponse:
+      type: object
+      required: [appId]
+      properties:
+        appId: { type: string }
+    CreateTokenRequest:
+      type: object
+      required: [appId, scopes]
+      properties:
+        appId: { type: string }
+        scopes:
+          type: array
+          items:
+            type: string
+            enum: [contacts:read, messages:send, messages:read, groups:read, groups:write, notifications:subscribe, identity:read_public]
+    CreateTokenResponse:
+      type: object
+      required: [tokenId, token, scopes]
+      properties:
+        tokenId: { type: string }
+        token: { type: string, description: Returned once; only its hash is stored locally. }
+        scopes:
+          type: array
+          items: { type: string }
+    SendDirectMessageRequest:
+      type: object
+      required: [fromPeerId, toPeerId, text]
+      properties:
+        fromPeerId: { type: string }
+        toPeerId: { type: string }
+        text: { type: string, minLength: 1 }
+    SendDirectMessageResponse:
+      type: object
+      required: [messageId, envelopeId]
+      properties:
+        messageId: { type: string }
+        envelopeId: { type: string }
+    WebhookSubscriptionRequest:
+      type: object
+      required: [webhookUrl, eventTypes]
+      properties:
+        webhookUrl:
+          type: string
+          description: Must be loopback-only in this phase.
+        eventTypes:
+          type: array
+          items:
+            type: string
+            enum: [contact.request.received, contact.request.approved, message.received, message.sent, message.failed, group.invitation.received, group.member.added, notification.created, peer.connected, peer.disconnected]
+    WebhookSubscriptionResponse:
+      type: object
+      required: [subscriptionId]
+      properties:
+        subscriptionId: { type: string }
+paths:
+  /v1/integrations/apps:
+    post:
+      security: []
+      summary: Register a local external application.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterAppRequest' }
+      responses:
+        '200':
+          description: Registered application.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RegisterAppResponse' }
+  /v1/integrations/tokens:
+    post:
+      summary: Issue a scoped local API token for an app.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTokenRequest' }
+      responses:
+        '200':
+          description: Token issued. Raw token is returned once.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreateTokenResponse' }
+
+  /v1/identity/public:
+    get:
+      summary: Export the local public identity profile.
+      responses:
+        '200':
+          description: Public identity profile.
+  /v1/contacts:
+    get:
+      summary: List trusted contacts.
+      responses:
+        '200':
+          description: Contacts.
+  /v1/contacts/requests:
+    post:
+      summary: Send a contact request by public peer id.
+      responses:
+        '200':
+          description: Contact request queued.
+  /v1/contacts/requests/{id}/approve:
+    post:
+      summary: Approve an inbound contact request.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Approved. }
+  /v1/contacts/requests/{id}/reject:
+    post:
+      summary: Reject an inbound contact request.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Rejected. }
+  /v1/contacts/{peerId}/block:
+    post:
+      summary: Block a peer.
+      parameters:
+        - in: path
+          name: peerId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Blocked. }
+  /v1/conversations:
+    get:
+      summary: List local conversations.
+      responses:
+        '200': { description: Conversations. }
+  /v1/conversations/{id}/messages:
+    get:
+      summary: List messages in a local conversation.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Messages. }
+  /v1/messages/direct:
+    post:
+      summary: Queue an encrypted direct message through the local daemon.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendDirectMessageRequest' }
+      responses:
+        '200':
+          description: Message queued into local outbox.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SendDirectMessageResponse' }
+
+  /v1/groups:
+    post:
+      summary: Create a local encrypted group shell.
+      responses:
+        '200': { description: Group created. }
+  /v1/groups/{groupId}/invitations:
+    post:
+      summary: Invite an accepted contact to a group.
+      parameters:
+        - in: path
+          name: groupId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Invitation created. }
+  /v1/groups/invitations/{id}/accept:
+    post:
+      summary: Accept a group invitation.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Invitation accepted. }
+  /v1/groups/invitations/{id}/reject:
+    post:
+      summary: Reject a group invitation.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Invitation rejected. }
+  /v1/groups/{groupId}/messages:
+    post:
+      summary: Queue a group message after MLS/OpenMLS adapter is composed.
+      parameters:
+        - in: path
+          name: groupId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Group message queued. }
+  /v1/events/webhooks:
+    post:
+      summary: Subscribe an app to local webhook events.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookSubscriptionRequest' }
+      responses:
+        '200':
+          description: Subscription registered.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WebhookSubscriptionResponse' }
+  /v1/events/stream:
+    get:
+      summary: Subscribe to local Server-Sent Events.
+      responses:
+        '200':
+          description: text/event-stream of local daemon events.
