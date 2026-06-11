@@ -34,3 +34,8 @@
 ## Local integration controls added
 
 Local integrations are modeled with per-app tokens, explicit permission scopes, token hashing, revocation, loopback-only webhook URLs, and a rate-limit port. Controllers must never log raw tokens and should return raw tokens only once at creation time.
+
+
+## Local API adapter controls
+
+The local API adapter rejects non-loopback hosts before routing, extracts bearer tokens only for protected integration operations, and keeps request handling in infrastructure while delegating business rules to application use cases. The daemon composition must still avoid logging bearer tokens or plaintext message bodies.

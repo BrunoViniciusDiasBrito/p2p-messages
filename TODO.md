@@ -1,6 +1,6 @@
 # PeerComms prioritized technical TODO
 
-Current estimated completion: **54%**.
+Current estimated completion: **62%**.
 
 ## Phase 3
 
@@ -18,5 +18,5 @@ Current estimated completion: **54%**.
 
 - Implement concrete MLS/OpenMLS adapter and encrypted group-message send/receive flow.
 - Add local REST/SSE API with scoped tokens and rate limits.
-- Generate SDK from `packages/protocol/openapi/local-api.v1.yaml`.
+- Generate/verify SDK from `packages/protocol/openapi/local-api.v1.yaml` and add contract tests against the local API adapter.
 - Scaffold Tauri/Vue desktop app.

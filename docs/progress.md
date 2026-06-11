@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **54%**.
+Estimated completion against the full instruction set: **62%**.
 
 ## Completed
 
@@ -13,6 +13,8 @@ Estimated completion against the full instruction set: **54%**.
 - Initial Groups domain/application slice for group creation, accepted-contact invitations, invitation acceptance/rejection, member removal, key epoch rotation, and MLS/OpenMLS adapter ports.
 - Initial SQLite repository adapters for identity, contacts, contact requests, conversations, messages, outbox, inbox, groups, and group invitations using a replaceable local database port.
 - Initial Integration domain/application slice for external apps, hash-only API tokens, permission scopes, local rate-limit port, loopback webhook subscriptions, and OpenAPI local API contract.
+- Framework-free local HTTP/SSE API adapter that routes loopback requests to use cases and rejects non-loopback hosts.
+- Expanded TypeScript SDK methods for identity, contacts, conversations, direct messages, groups, webhooks, and SSE events.
 
 ## Remaining major work
 
@@ -21,7 +23,7 @@ Estimated completion against the full instruction set: **54%**.
 - In-memory and libp2p local node integration tests.
 - P2P discovery/transports: mDNS, DHT/Kademlia, secure transport, optional relays.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
-- HTTP/SSE daemon controller implementation that wires the integration use cases to the OpenAPI contract.
-- SDK generated from OpenAPI.
+- Daemon composition that binds the local HTTP/SSE adapter to an actual loopback server and concrete repositories.
+- SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded but not generated.
 - Tauri 2 + Vue desktop UI.
 - E2E tests and hardening pass.

@@ -105,6 +105,70 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/CreateTokenResponse' }
+
+  /v1/identity/public:
+    get:
+      summary: Export the local public identity profile.
+      responses:
+        '200':
+          description: Public identity profile.
+  /v1/contacts:
+    get:
+      summary: List trusted contacts.
+      responses:
+        '200':
+          description: Contacts.
+  /v1/contacts/requests:
+    post:
+      summary: Send a contact request by public peer id.
+      responses:
+        '200':
+          description: Contact request queued.
+  /v1/contacts/requests/{id}/approve:
+    post:
+      summary: Approve an inbound contact request.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Approved. }
+  /v1/contacts/requests/{id}/reject:
+    post:
+      summary: Reject an inbound contact request.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Rejected. }
+  /v1/contacts/{peerId}/block:
+    post:
+      summary: Block a peer.
+      parameters:
+        - in: path
+          name: peerId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Blocked. }
+  /v1/conversations:
+    get:
+      summary: List local conversations.
+      responses:
+        '200': { description: Conversations. }
+  /v1/conversations/{id}/messages:
+    get:
+      summary: List messages in a local conversation.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Messages. }
   /v1/messages/direct:
     post:
       summary: Queue an encrypted direct message through the local daemon.
@@ -119,6 +183,52 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SendDirectMessageResponse' }
+
+  /v1/groups:
+    post:
+      summary: Create a local encrypted group shell.
+      responses:
+        '200': { description: Group created. }
+  /v1/groups/{groupId}/invitations:
+    post:
+      summary: Invite an accepted contact to a group.
+      parameters:
+        - in: path
+          name: groupId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Invitation created. }
+  /v1/groups/invitations/{id}/accept:
+    post:
+      summary: Accept a group invitation.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Invitation accepted. }
+  /v1/groups/invitations/{id}/reject:
+    post:
+      summary: Reject a group invitation.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Invitation rejected. }
+  /v1/groups/{groupId}/messages:
+    post:
+      summary: Queue a group message after MLS/OpenMLS adapter is composed.
+      parameters:
+        - in: path
+          name: groupId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Group message queued. }
   /v1/events/webhooks:
     post:
       summary: Subscribe an app to local webhook events.

@@ -13,3 +13,8 @@ client.events.on('message.received', (event) => {
 ```
 
 The SDK is intentionally local-API oriented. It does not talk to a centralized backend.
+
+
+## Expanded SDK surface
+
+The SDK now includes helpers for integrations, identity, contacts, conversations, direct messages, groups, loopback webhooks, and SSE event subscriptions. It remains handwritten for now; a later phase should generate or verify it from `packages/protocol/openapi/local-api.v1.yaml`.
