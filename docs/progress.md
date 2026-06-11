@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **62%**.
+Estimated completion against the full instruction set: **68%**.
 
 ## Completed
 
@@ -15,6 +15,7 @@ Estimated completion against the full instruction set: **62%**.
 - Initial Integration domain/application slice for external apps, hash-only API tokens, permission scopes, local rate-limit port, loopback webhook subscriptions, and OpenAPI local API contract.
 - Framework-free local HTTP/SSE API adapter that routes loopback requests to use cases and rejects non-loopback hosts.
 - Expanded TypeScript SDK methods for identity, contacts, conversations, direct messages, groups, webhooks, and SSE events.
+- Initial Notifications domain/application/storage slice for local in-app/API/SSE/webhook notifications, mark-read flow, and event subscriptions.
 
 ## Remaining major work
 
@@ -26,4 +27,4 @@ Estimated completion against the full instruction set: **62%**.
 - Daemon composition that binds the local HTTP/SSE adapter to an actual loopback server and concrete repositories.
 - SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded but not generated.
 - Tauri 2 + Vue desktop UI.
-- E2E tests and hardening pass.
+- Notifications UI/desktop adapter wiring, E2E tests, and hardening pass.

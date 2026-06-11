@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS group_members (group_id TEXT NOT NULL, peer_id TEXT N
 CREATE TABLE IF NOT EXISTS group_invitations (id TEXT PRIMARY KEY, group_id TEXT NOT NULL, inviter_peer_id TEXT NOT NULL, invitee_peer_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox (envelope_id TEXT PRIMARY KEY, to_peer_id TEXT, envelope_json TEXT NOT NULL, status TEXT NOT NULL, retry_count INTEGER NOT NULL DEFAULT 0, next_attempt_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS inbox (envelope_id TEXT PRIMARY KEY, from_peer_id TEXT NOT NULL, envelope_json TEXT NOT NULL, received_at TEXT NOT NULL, processed_at TEXT);
-CREATE TABLE IF NOT EXISTS notifications (id TEXT PRIMARY KEY, type TEXT NOT NULL, title TEXT NOT NULL, body TEXT, read_at TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS notifications (id TEXT PRIMARY KEY, type TEXT NOT NULL, title TEXT NOT NULL, body TEXT, channels TEXT, read_at TEXT, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS external_apps (id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL, revoked_at TEXT);
 CREATE TABLE IF NOT EXISTS api_tokens (id TEXT PRIMARY KEY, app_id TEXT NOT NULL REFERENCES external_apps(id), token_hash TEXT NOT NULL, scopes TEXT NOT NULL, created_at TEXT NOT NULL, revoked_at TEXT);
 CREATE TABLE IF NOT EXISTS webhook_subscriptions (id TEXT PRIMARY KEY, app_id TEXT NOT NULL, url TEXT NOT NULL, event_types TEXT NOT NULL, created_at TEXT NOT NULL);

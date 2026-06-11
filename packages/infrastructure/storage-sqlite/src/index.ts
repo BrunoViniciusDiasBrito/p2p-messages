@@ -5,3 +5,4 @@ export * from './contact-repositories.js';
 export * from './messaging-repositories.js';
 export * from './group-repositories.js';
 export * from './integration-repositories.js';
+export * from './notification-repository.js';

@@ -12,3 +12,5 @@ export * from './ports/group-ports.js';
 export * from './groups/group-use-cases.js';
 export * from './ports/integration-ports.js';
 export * from './integration/integration-use-cases.js';
+export * from './ports/notification-ports.js';
+export * from './notifications/notification-use-cases.js';

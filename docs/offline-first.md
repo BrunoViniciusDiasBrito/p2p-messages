@@ -20,3 +20,8 @@ Direct messages are first saved locally, encrypted through an application crypto
 ## SQLite persistence adapter foundation
 
 The storage package now implements repository adapters for identities, contacts, conversations, messages, outbox, inbox, groups, and group invitations through a generic `SqliteDatabasePort`. The daemon still needs to compose this port with a concrete open-source SQLite driver and run migrations at startup.
+
+
+## Local notifications
+
+Notifications are modeled as local-first state and can be persisted in SQLite. They support in-app, local API event, local SSE, local webhook, and desktop-local channels. Remote push is still intentionally out of scope without OS push infrastructure or optional intermediaries.

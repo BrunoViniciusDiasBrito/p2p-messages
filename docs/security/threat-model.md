@@ -39,3 +39,8 @@ Local integrations are modeled with per-app tokens, explicit permission scopes, 
 ## Local API adapter controls
 
 The local API adapter rejects non-loopback hosts before routing, extracts bearer tokens only for protected integration operations, and keeps request handling in infrastructure while delegating business rules to application use cases. The daemon composition must still avoid logging bearer tokens or plaintext message bodies.
+
+
+## Notification controls
+
+Notification payloads are local events derived from already-processed domain/application events. Remote push is not implemented in this phase. Webhook/SSE notification delivery must preserve token hygiene and avoid including private keys, API tokens, or decrypted sensitive payloads unless explicitly authorized by local policy.
