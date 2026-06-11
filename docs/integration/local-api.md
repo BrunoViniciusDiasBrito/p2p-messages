@@ -21,3 +21,8 @@ The local API will bind to `127.0.0.1` only and require per-application bearer t
 - `POST /v1/groups/invitations/:id/reject`
 - `POST /v1/groups/:groupId/messages`
 - `GET /v1/events/stream`
+
+
+## Implemented integration foundation
+
+The application layer now includes use cases for registering external apps, issuing/revoking hash-only scoped API tokens, authorizing external calls, sending direct messages from external apps, and subscribing external apps to loopback-only webhooks/events. The OpenAPI draft lives at `packages/protocol/openapi/local-api.v1.yaml`. HTTP/SSE controllers are still pending and must bind only to `127.0.0.1`.

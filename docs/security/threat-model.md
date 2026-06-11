@@ -29,3 +29,8 @@
 - No custom cryptographic primitive.
 - No global availability guarantee without reachable peers or optional relays.
 - No remote OS push without external push infrastructure.
+
+
+## Local integration controls added
+
+Local integrations are modeled with per-app tokens, explicit permission scopes, token hashing, revocation, loopback-only webhook URLs, and a rate-limit port. Controllers must never log raw tokens and should return raw tokens only once at creation time.

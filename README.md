@@ -22,6 +22,7 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - Initial direct-message domain/application slice with accepted-contact enforcement, crypto/signature ports, persistent outbox model, inbox deduplication model, and retry backoff use case.
 - Initial group domain/application slice with group creation, invitations for accepted contacts, invite acceptance/rejection, member removal, key epoch rotation, and MLS/OpenMLS crypto port boundaries.
 - Initial SQLite repository adapters for identity, contacts, messaging mailboxes, groups, and invitations behind a generic local database port.
+- Initial local integration model for external apps, hash-only API tokens, scoped permissions, local rate-limit boundary, loopback webhook subscriptions, and an OpenAPI v1 contract.
 
 ## Connectivity honesty
 
@@ -57,7 +58,7 @@ See:
 
 ## Progress
 
-Estimated completion against the full instruction set: **46%**. See [implementation progress](docs/progress.md).
+Estimated completion against the full instruction set: **54%**. See [implementation progress](docs/progress.md).
 
 ## Prioritized TODO
 
@@ -66,7 +67,7 @@ Estimated completion against the full instruction set: **46%**. See [implementat
 3. Add audited crypto adapter and encrypted local keystore integration tests.
 4. Add in-memory two-node transport integration tests for direct messages.
 5. Add libp2p adapter with mDNS local discovery and optional DHT/bootstrap configuration.
-6. Implement local REST/SSE API on `127.0.0.1` with token scopes and rate limits.
+6. Implement HTTP/SSE daemon controllers on `127.0.0.1` using the integration use cases and OpenAPI contract.
 7. Expand SDK from documented OpenAPI contracts.
 8. Implement concrete MLS/OpenMLS group-message adapter and group message transport.
 9. Scaffold Tauri/Vue desktop UI after daemon APIs stabilize.

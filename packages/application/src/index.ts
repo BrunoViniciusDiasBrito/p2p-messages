@@ -10,3 +10,5 @@ export * from './ports/messaging-ports.js';
 export * from './messaging/messaging-use-cases.js';
 export * from './ports/group-ports.js';
 export * from './groups/group-use-cases.js';
+export * from './ports/integration-ports.js';
+export * from './integration/integration-use-cases.js';

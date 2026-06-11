@@ -14,3 +14,7 @@ export * from './messaging/mailbox.js';
 export * from './groups/value-objects.js';
 export * from './groups/group.js';
 export * from './groups/group-invitation.js';
+export * from './integration/permissions.js';
+export * from './integration/external-application.js';
+export * from './integration/api-token.js';
+export * from './integration/webhook-subscription.js';
