@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **85%**.
+Estimated completion against the full instruction set: **88%**.
 
 ## Completed
 
@@ -19,10 +19,11 @@ Estimated completion against the full instruction set: **85%**.
 - Initial daemon/headless lifecycle foundation with migration runner support and framework-free Node loopback HTTP server adapter.
 - Initial P2P Network domain/application slice with required peer node use cases and an in-memory local two-node transport adapter for tests.
 - Direct-message outbox retry can now publish through a peer-node runtime, and inbound direct-message envelopes can be routed into `ReceiveDirectMessageUseCase` for a deterministic two-node local delivery test.
+- Initial WebCrypto infrastructure adapter for local identity key generation, P-256 envelope signatures, and AES-GCM direct-message encryption using an in-memory key store.
 
 ## Remaining major work
 
-- Concrete audited crypto adapter and local encrypted key store.
+- Persistent encrypted local key store and production hardening for the WebCrypto/libsodium crypto adapter path.
 - Concrete open-source SQLite driver adapter for the daemon database port.
 - libp2p adapter with mDNS, DHT/Kademlia, secure transport, optional relay support, and real local node integration tests.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.

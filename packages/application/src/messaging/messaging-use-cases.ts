@@ -125,7 +125,7 @@ export class ReceiveDirectMessageUseCase {
       createdAt: new Date(input.envelope.createdAt),
       updatedAt: now
     }, this.ids.newId('evt'));
-    const plaintext = await this.crypto.decryptDirect({ encryptedPayload: input.envelope.payload, fromPeerId: input.envelope.fromPeerId, toPeerId: input.localPeerId });
+    const plaintext = await this.crypto.decryptDirect({ encryptedPayload: input.envelope.payload, fromPeerId: input.envelope.fromPeerId, toPeerId: input.localPeerId, nonce: input.envelope.nonce });
     message.markDecrypted(MessageBody.create(plaintext), now, this.ids.newId('evt'));
     await this.messages.save(message);
     await this.events.publish(message.pullDomainEvents());

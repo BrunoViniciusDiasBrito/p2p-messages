@@ -9,3 +9,7 @@
 7. Logs must be sanitized and must not include private keys, tokens, plaintext messages, or recovery secrets.
 
 8. Group membership use cases depend on a `GroupCryptoPort` for welcome creation, welcome acceptance, and epoch rotation; the current code deliberately does not implement group encryption itself.
+
+## Direct-message adapter status
+
+The infrastructure layer now includes an initial WebCrypto adapter for local/test direct-message composition. It uses platform WebCrypto primitives rather than custom algorithms: ECDSA P-256 with SHA-256 for envelope signatures and AES-GCM for direct-message payload encryption. The current key store is intentionally in-memory; production composition still requires encrypted local persistence, key backup/rotation UX, and a review against the final libsodium/libp2p Noise/OpenMLS adapter choices.

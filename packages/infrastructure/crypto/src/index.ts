@@ -10,3 +10,5 @@ export interface CryptoPort {
 }
 
 export const cryptoAdapterNotice = 'Use audited open-source primitives such as libsodium/noble/OpenMLS adapters; no custom cryptography is implemented in domain code.';
+
+export * from './webcrypto-direct-message-crypto.js';

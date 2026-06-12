@@ -7,7 +7,6 @@ import {
   ReceiveDirectMessageUseCase,
   RetryOutboxMessagesUseCase,
   SendDirectMessageUseCase,
-  type DirectMessageCryptoPort,
   type IdGenerator
 } from '@peercomms/application';
 import {
@@ -17,6 +16,7 @@ import {
   InMemoryMessageRepository,
   InMemoryOutboxRepository
 } from '@peercomms/testing';
+import { InMemoryWebCryptoKeyStore, WebCryptoDirectMessageCrypto, WebCryptoIdentityKeyProvider } from '@peercomms/crypto';
 import { InMemoryPeerNetwork, InMemoryPeerNodeRuntime } from '../index.js';
 
 class SequentialIds implements IdGenerator {
@@ -28,17 +28,16 @@ class SequentialIds implements IdGenerator {
   }
 }
 
-const crypto: DirectMessageCryptoPort = {
-  async encryptDirect(input) { return { encryptedPayload: `ciphertext_${Buffer.from(input.plaintext).toString('base64')}`, nonce: 'nonce_1234567890123456' }; },
-  async decryptDirect(input) { return Buffer.from(input.encryptedPayload.replace('ciphertext_', ''), 'base64').toString('utf8'); },
-  async signEnvelope() { return 'signature_123456789012345678901234'; },
-  async verifyEnvelopeSignature() { return true; }
-};
-
 describe('in-memory P2P direct messaging composition', () => {
   it('delivers a queued direct message from node A to node B through retry/outbox and the P2P runtime', async () => {
-    const peerA = 'pc_nodeapeer123456767';
-    const peerB = 'pc_nodebpeer123456767';
+    const keys = new InMemoryWebCryptoKeyStore();
+    const provider = new WebCryptoIdentityKeyProvider(keys);
+    const identityA = await provider.generateIdentity();
+    const identityB = await provider.generateIdentity();
+    const peerA = identityA.peerId;
+    const peerB = identityB.peerId;
+    await keys.registerSharedSecret({ leftPeerId: peerA, rightPeerId: peerB, secret: new Uint8Array(32).fill(11) });
+    const crypto = new WebCryptoDirectMessageCrypto(keys);
     const now = new Date('2026-06-12T00:00:00.000Z');
 
     const contactsA = new InMemoryContactRepository();

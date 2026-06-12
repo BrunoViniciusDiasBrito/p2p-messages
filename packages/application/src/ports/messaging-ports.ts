@@ -26,7 +26,7 @@ export interface InboxRepository {
 
 export interface DirectMessageCryptoPort {
   encryptDirect(input: { plaintext: string; fromPeerId: string; toPeerId: string }): Promise<{ encryptedPayload: string; nonce: string }>;
-  decryptDirect(input: { encryptedPayload: string; fromPeerId: string; toPeerId: string }): Promise<string>;
+  decryptDirect(input: { encryptedPayload: string; fromPeerId: string; toPeerId: string; nonce?: string }): Promise<string>;
   signEnvelope(input: { canonicalEnvelope: string; fromPeerId: string }): Promise<string>;
   verifyEnvelopeSignature(input: { canonicalEnvelope: string; signature: string; fromPeerId: string }): Promise<boolean>;
 }
