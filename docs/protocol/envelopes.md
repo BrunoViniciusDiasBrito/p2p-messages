@@ -25,3 +25,8 @@ Sensitive payloads must be encrypted. The envelope keeps only routing metadata r
 ## Direct message payload
 
 The direct-message application slice treats `payload` as encrypted ciphertext produced by an audited crypto adapter behind a port. The plaintext body is not placed in transport envelopes. The unsigned envelope is canonicalized before signing by the crypto adapter.
+
+
+## Direct-message envelope contract
+
+`directMessageEnvelopeSchema` narrows the base transport envelope for `direct_message` traffic. It requires `toPeerId` and `conversationId`, forbids `groupId`, keeps routing metadata minimal, and is asserted by the in-memory two-node delivery test before publishing/retrying the queued envelope.

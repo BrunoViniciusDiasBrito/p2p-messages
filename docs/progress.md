@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **94%**.
+Estimated completion against the full instruction set: **96%**.
 
 ## Completed
 
@@ -23,6 +23,7 @@ Estimated completion against the full instruction set: **94%**.
 - Direct-message receive path now enforces replay/expiry protections with inbox deduplication, signature verification, timestamp validation, and processed inbox entries.
 - Initial encrypted local JSON vault for sensitive adapter material using WebCrypto PBKDF2-SHA256 and AES-256-GCM behind a storage port.
 - SQLite-backed encrypted vault storage adapter for persisting encrypted key/secret records without plaintext columns.
+- Protocol-schema-backed direct-message envelope contract and two-node delivery assertion against that contract.
 
 ## Remaining major work
 

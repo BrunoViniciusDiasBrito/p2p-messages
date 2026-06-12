@@ -1,12 +1,12 @@
 # PeerComms prioritized technical TODO
 
-Current estimated completion: **94%**.
+Current estimated completion: **96%**.
 
 ## Phase 3
 
 - Implement a concrete SQLite driver adapter such as better-sqlite3/sql.js/libsql-compatible local mode for the daemon database port.
 - Compose the encrypted vault with an OS keystore/passphrase unlock flow in the daemon for private key references and shared secrets.
-- Add protocol-schema-backed delivery contract tests and broader malformed-envelope fuzz cases.
+- Add broader malformed-envelope fuzz cases and OpenAPI/SDK generation verification.
 - Add persistent replay metadata compaction/retention policy for inbox history.
 
 ## Phase 4

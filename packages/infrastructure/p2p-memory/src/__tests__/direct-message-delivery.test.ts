@@ -17,6 +17,7 @@ import {
   InMemoryOutboxRepository
 } from '@peercomms/testing';
 import { InMemoryWebCryptoKeyStore, WebCryptoDirectMessageCrypto, WebCryptoIdentityKeyProvider } from '@peercomms/crypto';
+import { parseDirectMessageEnvelope } from '@peercomms/protocol';
 import { InMemoryPeerNetwork, InMemoryPeerNodeRuntime } from '../index.js';
 
 class SequentialIds implements IdGenerator {
@@ -64,6 +65,8 @@ describe('in-memory P2P direct messaging composition', () => {
     const sendResult = await new SendDirectMessageUseCase(contactsA, conversationsA, messagesA, outboxA, crypto, new NoopDomainEventBus(), new SequentialIds())
       .execute({ fromPeerId: peerA, toPeerId: peerB, text: 'Olá por P2P local' });
     expect(sendResult.ok).toBe(true);
+    const queuedEnvelope = JSON.parse((await outboxA.list())[0]!.snapshot.envelopeJson);
+    expect(parseDirectMessageEnvelope(queuedEnvelope).toPeerId).toBe(peerB);
 
     const retryResult = await new RetryOutboxMessagesUseCase(outboxA, new PeerNodeEnvelopePublisher(nodeA)).execute({ now });
     expect(retryResult.ok && retryResult.value).toEqual({ published: 1, queued: 0 });

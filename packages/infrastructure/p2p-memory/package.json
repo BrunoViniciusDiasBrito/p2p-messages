@@ -15,6 +15,7 @@
     "@peercomms/application": "workspace:*",
     "@peercomms/crypto": "workspace:*",
     "@peercomms/domain": "workspace:*",
+    "@peercomms/protocol": "workspace:*",
     "@peercomms/testing": "workspace:*"
   }
 }
