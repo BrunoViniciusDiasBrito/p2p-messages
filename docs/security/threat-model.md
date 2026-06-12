@@ -44,3 +44,8 @@ The local API adapter rejects non-loopback hosts before routing, extracts bearer
 ## Notification controls
 
 Notification payloads are local events derived from already-processed domain/application events. Remote push is not implemented in this phase. Webhook/SSE notification delivery must preserve token hygiene and avoid including private keys, API tokens, or decrypted sensitive payloads unless explicitly authorized by local policy.
+
+
+## Replay and expired envelope handling
+
+Direct-message reception rejects expired envelopes, validates inbound timestamps, verifies the envelope signature before decryption, stores successfully processed envelopes in the inbox, and treats repeated `envelopeId` values as duplicates. This is a local replay-protection layer; production hardening still needs long-term replay metadata retention/compaction policy and protocol-schema-backed malformed-envelope tests.

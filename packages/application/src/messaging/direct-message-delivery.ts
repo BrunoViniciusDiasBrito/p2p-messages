@@ -61,6 +61,7 @@ export class DirectMessageIncomingEnvelopeProcessor implements IncomingEnvelopeP
 
     const result = await this.receiveDirectMessage.execute({
       localPeerId: this.localPeerId,
+      receivedAt: input.receivedAt,
       envelope: {
         protocolVersion: envelope.protocolVersion,
         envelopeId: envelope.envelopeId,

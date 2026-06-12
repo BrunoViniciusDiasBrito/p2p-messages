@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Contact, Conversation, ConversationId, Message, OutboxEntry, PeerId } from '@peercomms/domain';
-import { NoopDomainEventBus, SendDirectMessageUseCase, RetryOutboxMessagesUseCase, type ConversationRepository, type DirectMessageCryptoPort, type EnvelopePublisherPort, type IdGenerator, type MessageRepository, type OutboxRepository } from '../index.js';
+import { Contact, Conversation, ConversationId, InboxEntry, Message, OutboxEntry, PeerId } from '@peercomms/domain';
+import { NoopDomainEventBus, ReceiveDirectMessageUseCase, SendDirectMessageUseCase, RetryOutboxMessagesUseCase, type ConversationRepository, type DirectMessageCryptoPort, type EnvelopePublisherPort, type IdGenerator, type InboxRepository, type MessageRepository, type OutboxRepository } from '../index.js';
 import type { ContactRepository } from '../ports/contact-ports.js';
 
 
@@ -21,6 +21,13 @@ class InMemoryMessageRepository implements MessageRepository {
   async listByConversationId(conversationId: ConversationId): Promise<Message[]> {
     return [...this.rows.values()].filter((message) => message.snapshot.conversationId.value === conversationId.value);
   }
+}
+
+
+class InMemoryInboxRepository implements InboxRepository {
+  private readonly rows = new Map<string, InboxEntry>();
+  async save(entry: InboxEntry): Promise<void> { this.rows.set(entry.snapshot.envelopeId, entry); }
+  async exists(envelopeId: string): Promise<boolean> { return this.rows.has(envelopeId); }
 }
 
 class InMemoryOutboxRepository implements OutboxRepository {
@@ -70,6 +77,62 @@ describe('messaging use cases', () => {
 
     expect(result.ok).toBe(true);
     expect((await outbox.list())[0]?.snapshot.status).toBe('queued_until_reachable');
+  });
+
+
+
+  it('deduplicates already processed direct message envelopes', async () => {
+    const contactsA = new Contacts();
+    const contactsB = new Contacts();
+    await contactsA.save(Contact.accepted(PeerId.create('pc_targetpeer123456'), new Date()));
+    await contactsB.save(Contact.accepted(PeerId.create('pc_senderpeer123456'), new Date()));
+    const outbox = new InMemoryOutboxRepository();
+    await new SendDirectMessageUseCase(contactsA, new InMemoryConversationRepository(), new InMemoryMessageRepository(), outbox, crypto, new NoopDomainEventBus(), new FixedIds())
+      .execute({ fromPeerId: 'pc_senderpeer123456', toPeerId: 'pc_targetpeer123456', text: 'Olá' });
+    const envelope = JSON.parse((await outbox.list())[0]!.snapshot.envelopeJson);
+    const inbox = new InMemoryInboxRepository();
+    const receiver = new ReceiveDirectMessageUseCase(contactsB, new InMemoryConversationRepository(), new InMemoryMessageRepository(), inbox, crypto, new NoopDomainEventBus(), new FixedIds());
+
+    const first = await receiver.execute({ localPeerId: 'pc_targetpeer123456', envelope, receivedAt: new Date() });
+    const second = await receiver.execute({ localPeerId: 'pc_targetpeer123456', envelope, receivedAt: new Date() });
+
+    expect(first.ok && first.value.duplicate).toBe(false);
+    expect(second.ok && second.value).toEqual({ messageId: envelope.envelopeId, duplicate: true });
+  });
+
+  it('rejects expired direct message envelopes before decrypting', async () => {
+    const contactsA = new Contacts();
+    const contactsB = new Contacts();
+    await contactsA.save(Contact.accepted(PeerId.create('pc_targetpeer123456'), new Date()));
+    await contactsB.save(Contact.accepted(PeerId.create('pc_senderpeer123456'), new Date()));
+    const outbox = new InMemoryOutboxRepository();
+    await new SendDirectMessageUseCase(contactsA, new InMemoryConversationRepository(), new InMemoryMessageRepository(), outbox, crypto, new NoopDomainEventBus(), new FixedIds())
+      .execute({ fromPeerId: 'pc_senderpeer123456', toPeerId: 'pc_targetpeer123456', text: 'Olá', expiresAt: new Date('2026-06-12T00:00:00.000Z') });
+    const envelope = JSON.parse((await outbox.list())[0]!.snapshot.envelopeJson);
+
+    const result = await new ReceiveDirectMessageUseCase(contactsB, new InMemoryConversationRepository(), new InMemoryMessageRepository(), new InMemoryInboxRepository(), crypto, new NoopDomainEventBus(), new FixedIds())
+      .execute({ localPeerId: 'pc_targetpeer123456', envelope, receivedAt: new Date('2026-06-12T00:00:01.000Z') });
+
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error.message).toBe('Expired direct message envelope');
+  });
+
+  it('rejects tampered direct message envelope signatures', async () => {
+    const contactsA = new Contacts();
+    const contactsB = new Contacts();
+    await contactsA.save(Contact.accepted(PeerId.create('pc_targetpeer123456'), new Date()));
+    await contactsB.save(Contact.accepted(PeerId.create('pc_senderpeer123456'), new Date()));
+    const outbox = new InMemoryOutboxRepository();
+    await new SendDirectMessageUseCase(contactsA, new InMemoryConversationRepository(), new InMemoryMessageRepository(), outbox, crypto, new NoopDomainEventBus(), new FixedIds())
+      .execute({ fromPeerId: 'pc_senderpeer123456', toPeerId: 'pc_targetpeer123456', text: 'Olá' });
+    const envelope = { ...JSON.parse((await outbox.list())[0]!.snapshot.envelopeJson), payload: 'ciphertext_dGFtcGVyZWQ=' };
+    const rejectingCrypto: DirectMessageCryptoPort = { ...crypto, async verifyEnvelopeSignature() { return false; } };
+
+    const result = await new ReceiveDirectMessageUseCase(contactsB, new InMemoryConversationRepository(), new InMemoryMessageRepository(), new InMemoryInboxRepository(), rejectingCrypto, new NoopDomainEventBus(), new FixedIds())
+      .execute({ localPeerId: 'pc_targetpeer123456', envelope, receivedAt: new Date() });
+
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error.message).toBe('Invalid direct message envelope signature');
   });
 
   it('retries due outbox messages with publisher port', async () => {

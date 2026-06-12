@@ -29,6 +29,7 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - Initial P2P Network context with required peer-node use cases and in-memory two-node transport for local tests.
 - Direct-message outbox retry now has a peer-node publisher bridge, and inbound direct-message envelopes can be delivered through the in-memory P2P runtime into the receive-message use case.
 - Initial WebCrypto crypto adapter for local identity generation, envelope signing/verification and AES-GCM direct-message encryption in tests/development composition.
+- Direct-message receive hardening for duplicate replay, expired envelopes, invalid timestamps, and tampered signatures.
 
 ## Connectivity honesty
 
@@ -64,14 +65,14 @@ See:
 
 ## Progress
 
-Estimated completion against the full instruction set: **88%**. See [implementation progress](docs/progress.md).
+Estimated completion against the full instruction set: **90%**. See [implementation progress](docs/progress.md).
 
 ## Prioritized TODO
 
 1. Add persistent encrypted local keystore integration for the WebCrypto/libsodium crypto path.
 2. Implement a concrete open-source SQLite driver adapter for the daemon database port.
-3. Add cross-node signed-envelope/replay/deduplication tests using the crypto adapter.
-4. Add signed-envelope/replay/deduplication contract tests across the delivery bridge.
+3. Add protocol-schema-backed delivery contract tests and broader malformed-envelope fuzz cases.
+4. Add persistent replay metadata compaction/retention policy for inbox history.
 5. Add libp2p adapter with mDNS local discovery, secure transport, optional DHT/bootstrap and optional relay support.
 6. Wire concrete repositories, crypto, notification publishing and P2P lifecycle into the daemon composition root.
 7. Add SDK generation pipeline from the OpenAPI contract and replace/verify the handwritten SDK.

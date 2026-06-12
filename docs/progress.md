@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **88%**.
+Estimated completion against the full instruction set: **90%**.
 
 ## Completed
 
@@ -20,6 +20,7 @@ Estimated completion against the full instruction set: **88%**.
 - Initial P2P Network domain/application slice with required peer node use cases and an in-memory local two-node transport adapter for tests.
 - Direct-message outbox retry can now publish through a peer-node runtime, and inbound direct-message envelopes can be routed into `ReceiveDirectMessageUseCase` for a deterministic two-node local delivery test.
 - Initial WebCrypto infrastructure adapter for local identity key generation, P-256 envelope signatures, and AES-GCM direct-message encryption using an in-memory key store.
+- Direct-message receive path now enforces replay/expiry protections with inbox deduplication, signature verification, timestamp validation, and processed inbox entries.
 
 ## Remaining major work
 

@@ -95,19 +95,27 @@ export class ReceiveDirectMessageUseCase {
     private readonly ids: IdGenerator
   ) {}
 
-  async execute(input: { localPeerId: string; envelope: DirectMessageEnvelopeDto }): Promise<Result<{ messageId: string; duplicate: boolean }>> {
+  async execute(input: { localPeerId: string; envelope: DirectMessageEnvelopeDto; receivedAt?: Date }): Promise<Result<{ messageId: string; duplicate: boolean }>> {
     if (await this.inbox.exists(input.envelope.envelopeId)) return ok({ messageId: input.envelope.envelopeId, duplicate: true });
     if (input.envelope.toPeerId !== input.localPeerId) return err(new Error('Envelope recipient does not match local peer'));
     const fromPeerId = PeerId.create(input.envelope.fromPeerId);
     const contact = await this.contacts.findByPeerId(fromPeerId);
     if (!contact?.canReceiveDirectMessages()) return err(new Error('Inbound direct messages require an accepted, non-blocked contact'));
 
+    const receivedAt = input.receivedAt ?? new Date();
+    const createdAt = new Date(input.envelope.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return err(new Error('Invalid direct message createdAt timestamp'));
+    const expiresAt = input.envelope.expiresAt ? new Date(input.envelope.expiresAt) : undefined;
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) return err(new Error('Invalid direct message expiresAt timestamp'));
+    if (expiresAt && expiresAt <= receivedAt) return err(new Error('Expired direct message envelope'));
+    if (createdAt.getTime() - receivedAt.getTime() > 5 * 60_000) return err(new Error('Direct message envelope createdAt is too far in the future'));
+
     const { signature, ...unsignedEnvelope } = input.envelope;
     const valid = await this.crypto.verifyEnvelopeSignature({ canonicalEnvelope: canonicalizeUnsignedEnvelope(unsignedEnvelope), signature, fromPeerId: input.envelope.fromPeerId });
     if (!valid) return err(new Error('Invalid direct message envelope signature'));
 
-    const now = new Date();
-    await this.inbox.save(InboxEntry.receive({ envelopeId: input.envelope.envelopeId, fromPeerId: input.envelope.fromPeerId, envelopeJson: serializeEnvelope(input.envelope), receivedAt: now }));
+    const now = receivedAt;
+    const inboxEntry = InboxEntry.receive({ envelopeId: input.envelope.envelopeId, fromPeerId: input.envelope.fromPeerId, envelopeJson: serializeEnvelope(input.envelope), receivedAt: now });
 
     let conversation = await this.conversations.findDirectByPeerId(fromPeerId);
     if (!conversation) {
@@ -122,12 +130,14 @@ export class ReceiveDirectMessageUseCase {
       toPeerId: PeerId.create(input.localPeerId),
       encryptedPayload: EncryptedPayload.create(input.envelope.payload),
       lamportClock: LamportClock.create(0),
-      createdAt: new Date(input.envelope.createdAt),
+      createdAt,
       updatedAt: now
     }, this.ids.newId('evt'));
     const plaintext = await this.crypto.decryptDirect({ encryptedPayload: input.envelope.payload, fromPeerId: input.envelope.fromPeerId, toPeerId: input.localPeerId, nonce: input.envelope.nonce });
     message.markDecrypted(MessageBody.create(plaintext), now, this.ids.newId('evt'));
     await this.messages.save(message);
+    inboxEntry.markProcessed(now);
+    await this.inbox.save(inboxEntry);
     await this.events.publish(message.pullDomainEvents());
     return ok({ messageId: message.snapshot.id.value, duplicate: false });
   }
