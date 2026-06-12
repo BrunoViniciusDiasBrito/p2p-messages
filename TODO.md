@@ -1,10 +1,10 @@
 # PeerComms prioritized technical TODO
 
-Current estimated completion: **68%**.
+Current estimated completion: **74%**.
 
 ## Phase 3
 
-- Compose SQLite repositories with a concrete driver such as better-sqlite3/sql.js/libsql-compatible local mode and a migration runner.
+- Implement a concrete SQLite driver adapter such as better-sqlite3/sql.js/libsql-compatible local mode for the daemon database port.
 - Add crypto adapter using audited open-source libraries.
 - Add direct-message in-memory two-node transport integration test.
 - Add signed envelope verification integration tests and replay/deduplication tests.

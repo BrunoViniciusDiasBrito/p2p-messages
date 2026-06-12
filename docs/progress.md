@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **68%**.
+Estimated completion against the full instruction set: **74%**.
 
 ## Completed
 
@@ -16,15 +16,16 @@ Estimated completion against the full instruction set: **68%**.
 - Framework-free local HTTP/SSE API adapter that routes loopback requests to use cases and rejects non-loopback hosts.
 - Expanded TypeScript SDK methods for identity, contacts, conversations, direct messages, groups, webhooks, and SSE events.
 - Initial Notifications domain/application/storage slice for local in-app/API/SSE/webhook notifications, mark-read flow, and event subscriptions.
+- Initial daemon/headless lifecycle foundation with migration runner support and framework-free Node loopback HTTP server adapter.
 
 ## Remaining major work
 
 - Concrete audited crypto adapter and local encrypted key store.
-- Daemon composition with a concrete open-source SQLite driver and migration runner.
+- Concrete open-source SQLite driver adapter for the daemon database port.
 - In-memory and libp2p local node integration tests.
 - P2P discovery/transports: mDNS, DHT/Kademlia, secure transport, optional relays.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
-- Daemon composition that binds the local HTTP/SSE adapter to an actual loopback server and concrete repositories.
+- Full daemon composition that wires concrete repositories, crypto, notifications, and P2P lifecycle together.
 - SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded but not generated.
 - Tauri 2 + Vue desktop UI.
 - Notifications UI/desktop adapter wiring, E2E tests, and hardening pass.

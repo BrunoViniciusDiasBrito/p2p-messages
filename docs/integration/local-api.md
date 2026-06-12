@@ -31,3 +31,8 @@ The application layer now includes use cases for registering external apps, issu
 ## HTTP/SSE adapter foundation
 
 `packages/infrastructure/integration-api` now provides a framework-free `LocalApiHttpHandler` based on the Web Fetch API. It rejects non-loopback hosts, maps OpenAPI routes to application use cases, extracts bearer tokens for integration-protected operations, and exposes an SSE event hub. A daemon still needs to bind this handler to an actual `127.0.0.1` listener.
+
+
+## Daemon loopback foundation
+
+`apps/daemon` now contains `PeerCommsDaemon` and `NodeLoopbackServer`, allowing the framework-free local API handler to be bound to a native Node HTTP listener on `127.0.0.1`. Full production composition still needs concrete repository, crypto, notification, and P2P wiring.

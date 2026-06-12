@@ -25,3 +25,8 @@ The storage package now implements repository adapters for identities, contacts,
 ## Local notifications
 
 Notifications are modeled as local-first state and can be persisted in SQLite. They support in-app, local API event, local SSE, local webhook, and desktop-local channels. Remote push is still intentionally out of scope without OS push infrastructure or optional intermediaries.
+
+
+## Daemon lifecycle foundation
+
+The daemon package can run migrations before starting the loopback API server. This prepares the offline-first local database before the app begins accepting local integration requests.
