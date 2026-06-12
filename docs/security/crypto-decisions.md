@@ -13,3 +13,8 @@
 ## Direct-message adapter status
 
 The infrastructure layer now includes an initial WebCrypto adapter for local/test direct-message composition. It uses platform WebCrypto primitives rather than custom algorithms: ECDSA P-256 with SHA-256 for envelope signatures and AES-GCM for direct-message payload encryption. The current key store is intentionally in-memory; production composition still requires encrypted local persistence, key backup/rotation UX, and a review against the final libsodium/libp2p Noise/OpenMLS adapter choices.
+
+
+## Encrypted local vault status
+
+The crypto infrastructure package now includes an encrypted JSON vault for sensitive adapter material. It uses WebCrypto PBKDF2-SHA256 for passphrase-based key derivation and AES-256-GCM for authenticated encryption, with storage hidden behind a port so the daemon can later use SQLite, filesystem, or OS keystore-backed persistence. This is not a substitute for platform secure enclaves/OS keychains; production composition must bind the vault to an OS keystore or equivalent local secret manager where available.
