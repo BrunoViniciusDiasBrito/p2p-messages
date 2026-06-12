@@ -34,6 +34,7 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - SQLite-backed encrypted vault storage adapter for persisting encrypted key/secret records without plaintext columns.
 - Protocol-schema-backed direct-message envelope contract, asserted in the local two-node delivery flow.
 - Malformed direct-message envelope contract tests for invalid versions, types, peer IDs, timestamps, nonce, payload, signature, and unknown metadata.
+- SDK local API contract tests for documented URLs, bearer-token behavior, JSON request bodies, group message endpoint coverage, and typed API errors.
 
 ## Connectivity honesty
 
@@ -69,13 +70,13 @@ See:
 
 ## Progress
 
-Estimated completion against the full instruction set: **98%**. See [implementation progress](docs/progress.md).
+Estimated completion against the full instruction set: **99%**. See [implementation progress](docs/progress.md).
 
 ## Prioritized TODO
 
 1. Compose the encrypted vault with an OS keystore/passphrase unlock flow in the daemon.
 2. Implement a concrete open-source SQLite driver adapter for the daemon database port.
-3. Add OpenAPI/SDK generation verification and daemon composition smoke command.
+3. Add OpenAPI generation verification and daemon composition smoke command.
 4. Add persistent replay metadata compaction/retention policy for inbox history.
 5. Add libp2p adapter with mDNS local discovery, secure transport, optional DHT/bootstrap and optional relay support.
 6. Wire concrete repositories, crypto, notification publishing and P2P lifecycle into the daemon composition root.

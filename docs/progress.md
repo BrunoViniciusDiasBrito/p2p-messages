@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **98%**.
+Estimated completion against the full instruction set: **99%**.
 
 ## Completed
 
@@ -25,6 +25,7 @@ Estimated completion against the full instruction set: **98%**.
 - SQLite-backed encrypted vault storage adapter for persisting encrypted key/secret records without plaintext columns.
 - Protocol-schema-backed direct-message envelope contract and two-node delivery assertion against that contract.
 - Broader malformed direct-message envelope contract tests for protocol version, type, peer IDs, timestamps, nonce, payload, signature, and unexpected metadata.
+- SDK local API contract tests for documented URLs, bearer-token behavior, JSON request bodies, group message endpoint coverage, and typed API errors.
 
 ## Remaining major work
 
@@ -33,6 +34,6 @@ Estimated completion against the full instruction set: **98%**.
 - libp2p adapter with mDNS, DHT/Kademlia, secure transport, optional relay support, and real local node integration tests.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
 - Full daemon composition that wires concrete repositories, crypto, notifications, P2P lifecycle, and direct-message delivery adapters together.
-- SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded but not generated.
+- SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded and contract-tested but not generated.
 - Tauri 2 + Vue desktop UI.
 - Notifications UI/desktop adapter wiring, E2E tests, and hardening pass.

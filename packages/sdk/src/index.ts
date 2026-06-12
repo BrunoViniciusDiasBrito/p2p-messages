@@ -5,6 +5,7 @@ export interface SendDirectMessageInput { readonly fromPeerId: string; readonly 
 export interface SendContactRequestInput { readonly localPeerId: string; readonly remotePeerId: string; readonly message?: string; }
 export interface CreateGroupInput { readonly ownerPeerId: string; readonly name: string; }
 export interface InvitePeerToGroupInput { readonly inviterPeerId: string; readonly inviteePeerId: string; }
+export interface SendGroupMessageInput { readonly fromPeerId: string; readonly text: string; }
 export interface SubscribeWebhookInput { readonly webhookUrl: string; readonly eventTypes: readonly PeerCommsEventName[]; }
 export type PeerCommsEventName =
   | 'contact.request.received'
@@ -56,7 +57,8 @@ export class PeerCommsClient {
     create: (input: CreateGroupInput): Promise<unknown> => this.post('/v1/groups', input),
     invite: (groupId: string, input: InvitePeerToGroupInput): Promise<unknown> => this.post(`/v1/groups/${encodeURIComponent(groupId)}/invitations`, input),
     acceptInvitation: (invitationId: string, welcomePayload: string): Promise<unknown> => this.post(`/v1/groups/invitations/${encodeURIComponent(invitationId)}/accept`, { welcomePayload }),
-    rejectInvitation: (invitationId: string): Promise<unknown> => this.post(`/v1/groups/invitations/${encodeURIComponent(invitationId)}/reject`, {})
+    rejectInvitation: (invitationId: string): Promise<unknown> => this.post(`/v1/groups/invitations/${encodeURIComponent(invitationId)}/reject`, {}),
+    sendMessage: (groupId: string, input: SendGroupMessageInput): Promise<unknown> => this.post(`/v1/groups/${encodeURIComponent(groupId)}/messages`, input)
   };
 
   readonly events = {
