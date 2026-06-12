@@ -1,18 +1,17 @@
 # PeerComms prioritized technical TODO
 
-Current estimated completion: **80%**.
+Current estimated completion: **85%**.
 
 ## Phase 3
 
 - Implement a concrete SQLite driver adapter such as better-sqlite3/sql.js/libsql-compatible local mode for the daemon database port.
 - Add crypto adapter using audited open-source libraries.
-- Wire direct-message send/receive flow to the in-memory P2P transport in an end-to-end two-node integration test.
-- Add signed envelope verification integration tests and replay/deduplication tests.
+- Add signed envelope verification integration tests, replay/deduplication tests, and direct-message delivery contract tests against real protocol schemas.
 
 ## Phase 4
 
 - Add libp2p adapter with secure transport, mDNS, optional DHT/bootstrap, optional relays, and protocol streams.
-- Model network status and peer reachability.
+- Expand network status and peer reachability projections from real runtime events.
 
 ## Phase 5+
 

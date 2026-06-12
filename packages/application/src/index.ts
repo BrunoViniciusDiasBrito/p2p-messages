@@ -16,3 +16,4 @@ export * from './ports/notification-ports.js';
 export * from './notifications/notification-use-cases.js';
 export * from './ports/p2p-ports.js';
 export * from './p2p/p2p-use-cases.js';
+export * from './messaging/direct-message-delivery.js';

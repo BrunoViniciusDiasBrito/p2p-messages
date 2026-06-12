@@ -7,8 +7,8 @@ describe('group protocol schemas', () => {
       invitationId: 'ginv_1',
       groupId: 'grp_1',
       groupName: 'Core Team',
-      inviterPeerId: 'pc_inviterpeer1234',
-      inviteePeerId: 'pc_inviteepeer1234',
+      inviterPeerId: 'pc_inviterpeer12345',
+      inviteePeerId: 'pc_inviteepeer12345',
       keyEpoch: 0,
       welcomePayload: 'welcome_payload_for_mls_adapter'
     });

@@ -12,6 +12,8 @@
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@peercomms/application": "workspace:*"
+    "@peercomms/application": "workspace:*",
+    "@peercomms/domain": "workspace:*",
+    "@peercomms/testing": "workspace:*"
   }
 }

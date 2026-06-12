@@ -45,7 +45,7 @@ describe('integration use cases', () => {
     expect(issued.ok).toBe(true);
 
     const auth = new DefaultIntegrationAuthorizer(apps, tokens, hasher);
-    const sent = await new SendMessageFromExternalAppUseCase(auth, limiter, sender).execute({ token: 'raw_test_token', fromPeerId: 'pc_senderpeer12345', toPeerId: 'pc_targetpeer12345', text: 'Olá' });
+    const sent = await new SendMessageFromExternalAppUseCase(auth, limiter, sender).execute({ token: 'raw_test_token', fromPeerId: 'pc_senderpeer123456', toPeerId: 'pc_targetpeer123456', text: 'Olá' });
     expect(sent.ok).toBe(true);
   });
 

@@ -5,7 +5,7 @@ import { LocalApiHttpHandler, type LocalApiUseCases } from '../local-api.js';
 const useCases: LocalApiUseCases = {
   registerExternalApplication: { async execute(input) { return ok({ appId: `app_${input.name}` }); } },
   createApiToken: { async execute() { return ok({ tokenId: 'tok_1', token: 'secret', scopes: ['messages:send'] }); } },
-  exportPublicIdentity: { async execute() { return ok({ peerId: 'pc_peerpeerpeer12' }); } },
+  exportPublicIdentity: { async execute() { return ok({ peerId: 'pc_peerpeerpeer1234' }); } },
   listContacts: { async execute() { return ok([]); } },
   sendContactRequest: { async execute() { return ok({ requestId: 'crq_1' }); } },
   approveContactRequest: { async execute(input) { return ok({ requestId: input.requestId }); } },
@@ -41,9 +41,9 @@ describe('LocalApiHttpHandler', () => {
     const response = await handler.handle(new Request('http://127.0.0.1:17345/v1/messages/direct', {
       method: 'POST',
       headers: { authorization: 'Bearer secret' },
-      body: JSON.stringify({ fromPeerId: 'pc_senderpeer12345', toPeerId: 'pc_targetpeer12345', text: 'Olá' })
+      body: JSON.stringify({ fromPeerId: 'pc_senderpeer123456', toPeerId: 'pc_targetpeer123456', text: 'Olá' })
     }));
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ messageId: 'msg_1', envelopeId: 'env_pc_targetpeer12345' });
+    expect(await response.json()).toEqual({ messageId: 'msg_1', envelopeId: 'env_pc_targetpeer123456' });
   });
 });

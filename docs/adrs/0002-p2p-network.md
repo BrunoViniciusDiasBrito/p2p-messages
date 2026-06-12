@@ -21,3 +21,7 @@ Use a TypeScript pnpm monorepo with DDD/Clean Architecture boundaries, domain/ap
 ## Update: in-memory first transport
 
 Before composing libp2p, the project now includes an in-memory P2P adapter that exercises the same application P2P ports. This allows deterministic local tests for discovery, connection, envelope publication, and unreachable peers without introducing a central server or coupling use cases to libp2p APIs.
+
+## 2026-06-12 update: direct-message delivery bridge
+
+Direct-message store-and-forward delivery now has an application-level bridge from `RetryOutboxMessagesUseCase` to a generic `PeerNodeRuntimePort`, plus an inbound direct-message processor that routes received envelopes into `ReceiveDirectMessageUseCase`. This keeps libp2p/mDNS/DHT concerns outside use cases while giving the next iteration a concrete seam for replacing the in-memory runtime with a libp2p adapter.

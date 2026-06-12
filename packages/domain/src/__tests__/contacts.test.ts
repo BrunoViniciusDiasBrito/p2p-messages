@@ -6,8 +6,8 @@ describe('ContactRequest', () => {
     const now = new Date();
     const request = ContactRequest.inbound({
       id: ContactRequestId.create('crq_1'),
-      localPeerId: PeerId.create('pc_localpeer1234567'),
-      remotePeerId: PeerId.create('pc_remotepeer123456'),
+      localPeerId: PeerId.create('pc_localpeer12345677'),
+      remotePeerId: PeerId.create('pc_remotepeer1234567'),
       createdAt: now,
       updatedAt: now
     }, 'evt_1');
@@ -22,8 +22,8 @@ describe('ContactRequest', () => {
     const now = new Date();
     const request = ContactRequest.outbound({
       id: ContactRequestId.create('crq_2'),
-      localPeerId: PeerId.create('pc_localpeer1234567'),
-      remotePeerId: PeerId.create('pc_remotepeer123456'),
+      localPeerId: PeerId.create('pc_localpeer12345677'),
+      remotePeerId: PeerId.create('pc_remotepeer1234567'),
       createdAt: now,
       updatedAt: now
     }, 'evt_1');

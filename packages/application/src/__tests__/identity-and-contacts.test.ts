@@ -59,7 +59,7 @@ describe('identity and contact use cases', () => {
     const contacts = new InMemoryContactRepository();
     const ids = new FixedIds();
     const events = new NoopDomainEventBus();
-    const sent = await new SendContactRequestUseCase(requests, events, ids).execute({ localPeerId: 'pc_localpeer1234567', remotePeerId: 'pc_remotepeer123456' });
+    const sent = await new SendContactRequestUseCase(requests, events, ids).execute({ localPeerId: 'pc_localpeer12345677', remotePeerId: 'pc_remotepeer1234567' });
     expect(sent.ok).toBe(true);
 
     const inbound = await requests.findById(sent.ok ? sent.value.requestId : '');
@@ -72,7 +72,7 @@ describe('identity and contact use cases', () => {
     const ids = new FixedIds();
     const events = new NoopDomainEventBus();
     const { ReceiveContactRequestUseCase } = await import('../index.js');
-    await new ReceiveContactRequestUseCase(requests, events, ids).execute({ requestId: 'crq_inbound', localPeerId: 'pc_localpeer1234567', remotePeerId: 'pc_remotepeer123456' });
+    await new ReceiveContactRequestUseCase(requests, events, ids).execute({ requestId: 'crq_inbound', localPeerId: 'pc_localpeer12345677', remotePeerId: 'pc_remotepeer1234567' });
     const result = await new ApproveContactRequestUseCase(requests, contacts, events, ids).execute({ requestId: 'crq_inbound' });
     expect(result.ok).toBe(true);
     expect((await contacts.list())[0]?.snapshot.status).toBe('accepted');

@@ -34,3 +34,7 @@ The daemon package can run migrations before starting the loopback API server. T
 ## In-memory P2P test transport
 
 The infrastructure layer now includes an in-memory P2P adapter for local two-node tests. It supports discovery, explicit connection, direct envelope delivery, and unreachable status when a target peer is not connected. This is a test/development adapter only; production networking still requires the libp2p adapter with mDNS/DHT/secure transport.
+
+## Local two-node delivery bridge
+
+`PeerNodeEnvelopePublisher` adapts the messaging outbox retry use case to any peer-node runtime. `DirectMessageIncomingEnvelopeProcessor` routes inbound direct-message envelopes into `ReceiveDirectMessageUseCase`. The in-memory P2P adapter uses these bridges to validate the full queued -> published -> received -> decrypted flow without a central server.

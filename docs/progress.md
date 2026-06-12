@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **80%**.
+Estimated completion against the full instruction set: **85%**.
 
 ## Completed
 
@@ -18,6 +18,7 @@ Estimated completion against the full instruction set: **80%**.
 - Initial Notifications domain/application/storage slice for local in-app/API/SSE/webhook notifications, mark-read flow, and event subscriptions.
 - Initial daemon/headless lifecycle foundation with migration runner support and framework-free Node loopback HTTP server adapter.
 - Initial P2P Network domain/application slice with required peer node use cases and an in-memory local two-node transport adapter for tests.
+- Direct-message outbox retry can now publish through a peer-node runtime, and inbound direct-message envelopes can be routed into `ReceiveDirectMessageUseCase` for a deterministic two-node local delivery test.
 
 ## Remaining major work
 
@@ -25,7 +26,7 @@ Estimated completion against the full instruction set: **80%**.
 - Concrete open-source SQLite driver adapter for the daemon database port.
 - libp2p adapter with mDNS, DHT/Kademlia, secure transport, optional relay support, and real local node integration tests.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
-- Full daemon composition that wires concrete repositories, crypto, notifications, and P2P lifecycle together.
+- Full daemon composition that wires concrete repositories, crypto, notifications, P2P lifecycle, and direct-message delivery adapters together.
 - SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded but not generated.
 - Tauri 2 + Vue desktop UI.
 - Notifications UI/desktop adapter wiring, E2E tests, and hardening pass.

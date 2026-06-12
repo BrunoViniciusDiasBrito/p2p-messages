@@ -6,7 +6,7 @@ import { PeerCommsDaemon, type LoopbackServerPort } from '../daemon.js';
 const useCases: LocalApiUseCases = {
   registerExternalApplication: { async execute() { return ok({ appId: 'app_1' }); } },
   createApiToken: { async execute() { return ok({ tokenId: 'tok_1', token: 'secret', scopes: [] }); } },
-  exportPublicIdentity: { async execute() { return ok({ peerId: 'pc_peerpeerpeer12' }); } },
+  exportPublicIdentity: { async execute() { return ok({ peerId: 'pc_peerpeerpeer1234' }); } },
   listContacts: { async execute() { return ok([]); } },
   sendContactRequest: { async execute() { return ok({ requestId: 'crq_1' }); } },
   approveContactRequest: { async execute() { return ok({}); } },

@@ -56,7 +56,7 @@ const crypto: DirectMessageCryptoPort = {
 describe('messaging use cases', () => {
   it('queues encrypted direct messages into outbox for accepted contacts', async () => {
     const contacts = new Contacts();
-    await contacts.save(Contact.accepted(PeerId.create('pc_targetpeer12345'), new Date()));
+    await contacts.save(Contact.accepted(PeerId.create('pc_targetpeer123456'), new Date()));
     const outbox = new InMemoryOutboxRepository();
     const result = await new SendDirectMessageUseCase(
       contacts,
@@ -66,7 +66,7 @@ describe('messaging use cases', () => {
       crypto,
       new NoopDomainEventBus(),
       new FixedIds()
-    ).execute({ fromPeerId: 'pc_senderpeer12345', toPeerId: 'pc_targetpeer12345', text: 'Olá' });
+    ).execute({ fromPeerId: 'pc_senderpeer123456', toPeerId: 'pc_targetpeer123456', text: 'Olá' });
 
     expect(result.ok).toBe(true);
     expect((await outbox.list())[0]?.snapshot.status).toBe('queued_until_reachable');
@@ -76,9 +76,9 @@ describe('messaging use cases', () => {
     const publisher: EnvelopePublisherPort = { async publish() { return 'published'; } };
     const outbox = new InMemoryOutboxRepository();
     const contacts = new Contacts();
-    await contacts.save(Contact.accepted(PeerId.create('pc_targetpeer12345'), new Date()));
+    await contacts.save(Contact.accepted(PeerId.create('pc_targetpeer123456'), new Date()));
     await new SendDirectMessageUseCase(contacts, new InMemoryConversationRepository(), new InMemoryMessageRepository(), outbox, crypto, new NoopDomainEventBus(), new FixedIds())
-      .execute({ fromPeerId: 'pc_senderpeer12345', toPeerId: 'pc_targetpeer12345', text: 'Olá' });
+      .execute({ fromPeerId: 'pc_senderpeer123456', toPeerId: 'pc_targetpeer123456', text: 'Olá' });
 
     const result = await new RetryOutboxMessagesUseCase(outbox, publisher).execute({ now: new Date() });
     expect(result.ok && result.value.published).toBe(1);

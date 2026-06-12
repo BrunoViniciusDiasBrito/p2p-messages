@@ -27,6 +27,7 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - Initial local notifications model/use cases/storage for in-app, local API, SSE and webhook channels.
 - Initial daemon/headless lifecycle foundation with migration runner support and framework-free Node loopback HTTP server adapter.
 - Initial P2P Network context with required peer-node use cases and in-memory two-node transport for local tests.
+- Direct-message outbox retry now has a peer-node publisher bridge, and inbound direct-message envelopes can be delivered through the in-memory P2P runtime into the receive-message use case.
 
 ## Connectivity honesty
 
@@ -62,14 +63,14 @@ See:
 
 ## Progress
 
-Estimated completion against the full instruction set: **80%**. See [implementation progress](docs/progress.md).
+Estimated completion against the full instruction set: **85%**. See [implementation progress](docs/progress.md).
 
 ## Prioritized TODO
 
 1. Implement audited crypto adapter and encrypted local keystore integration.
 2. Implement a concrete open-source SQLite driver adapter for the daemon database port.
 3. Add audited crypto adapter and encrypted local keystore integration tests.
-4. Connect direct-message use cases to the in-memory P2P transport for an end-to-end two-node test.
+4. Add signed-envelope/replay/deduplication contract tests across the delivery bridge.
 5. Add libp2p adapter with mDNS local discovery, secure transport, optional DHT/bootstrap and optional relay support.
 6. Wire concrete repositories, crypto, notification publishing and P2P lifecycle into the daemon composition root.
 7. Add SDK generation pipeline from the OpenAPI contract and replace/verify the handwritten SDK.

@@ -7,8 +7,8 @@ describe('Message', () => {
     const message = Message.queueDirectDraft({
       id: MessageId.create('msg_1'),
       conversationId: ConversationId.create('cnv_1'),
-      fromPeerId: PeerId.create('pc_senderpeer12345'),
-      toPeerId: PeerId.create('pc_targetpeer12345'),
+      fromPeerId: PeerId.create('pc_senderpeer123456'),
+      toPeerId: PeerId.create('pc_targetpeer123456'),
       body: MessageBody.create('hello'),
       lamportClock: LamportClock.initial(),
       createdAt: now,
