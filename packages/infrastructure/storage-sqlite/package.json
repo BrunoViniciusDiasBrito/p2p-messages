@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@peercomms/application": "workspace:*",
+    "@peercomms/crypto": "workspace:*",
     "@peercomms/domain": "workspace:*"
   }
 }

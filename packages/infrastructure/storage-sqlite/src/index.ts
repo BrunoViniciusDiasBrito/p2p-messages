@@ -7,3 +7,4 @@ export * from './group-repositories.js';
 export * from './integration-repositories.js';
 export * from './notification-repository.js';
 export * from './migrations.js';
+export * from './encrypted-vault-storage.js';

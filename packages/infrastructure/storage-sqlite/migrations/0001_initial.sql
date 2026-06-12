@@ -42,3 +42,14 @@ CREATE TABLE IF NOT EXISTS external_apps (id TEXT PRIMARY KEY, name TEXT NOT NUL
 CREATE TABLE IF NOT EXISTS api_tokens (id TEXT PRIMARY KEY, app_id TEXT NOT NULL REFERENCES external_apps(id), token_hash TEXT NOT NULL, scopes TEXT NOT NULL, created_at TEXT NOT NULL, revoked_at TEXT);
 CREATE TABLE IF NOT EXISTS webhook_subscriptions (id TEXT PRIMARY KEY, app_id TEXT NOT NULL, url TEXT NOT NULL, event_types TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS network_peers (peer_id TEXT PRIMARY KEY, reachability TEXT NOT NULL, last_seen_at TEXT, metadata_json TEXT);
+CREATE TABLE IF NOT EXISTS encrypted_vault_records (
+  key TEXT PRIMARY KEY,
+  version INTEGER NOT NULL,
+  kdf TEXT NOT NULL,
+  iterations INTEGER NOT NULL,
+  salt TEXT NOT NULL,
+  cipher TEXT NOT NULL,
+  nonce TEXT NOT NULL,
+  ciphertext TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);

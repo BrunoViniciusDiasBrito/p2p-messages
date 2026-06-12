@@ -18,3 +18,6 @@ The infrastructure layer now includes an initial WebCrypto adapter for local/tes
 ## Encrypted local vault status
 
 The crypto infrastructure package now includes an encrypted JSON vault for sensitive adapter material. It uses WebCrypto PBKDF2-SHA256 for passphrase-based key derivation and AES-256-GCM for authenticated encryption, with storage hidden behind a port so the daemon can later use SQLite, filesystem, or OS keystore-backed persistence. This is not a substitute for platform secure enclaves/OS keychains; production composition must bind the vault to an OS keystore or equivalent local secret manager where available.
+
+
+The storage-sqlite package now includes an adapter for persisting encrypted vault records in SQLite. It stores only metadata, salt, nonce, and ciphertext; plaintext key material must never be written to SQLite columns.

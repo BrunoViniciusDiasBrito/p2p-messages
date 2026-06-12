@@ -31,6 +31,7 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - Initial WebCrypto crypto adapter for local identity generation, envelope signing/verification and AES-GCM direct-message encryption in tests/development composition.
 - Direct-message receive hardening for duplicate replay, expired envelopes, invalid timestamps, and tampered signatures.
 - Initial encrypted JSON vault adapter for sensitive local material using WebCrypto PBKDF2-SHA256 and AES-256-GCM behind a storage port.
+- SQLite-backed encrypted vault storage adapter for persisting encrypted key/secret records without plaintext columns.
 
 ## Connectivity honesty
 
@@ -66,11 +67,11 @@ See:
 
 ## Progress
 
-Estimated completion against the full instruction set: **92%**. See [implementation progress](docs/progress.md).
+Estimated completion against the full instruction set: **94%**. See [implementation progress](docs/progress.md).
 
 ## Prioritized TODO
 
-1. Compose the encrypted vault with a concrete local/OS keystore and daemon storage path.
+1. Compose the encrypted vault with an OS keystore/passphrase unlock flow in the daemon.
 2. Implement a concrete open-source SQLite driver adapter for the daemon database port.
 3. Add protocol-schema-backed delivery contract tests and broader malformed-envelope fuzz cases.
 4. Add persistent replay metadata compaction/retention policy for inbox history.

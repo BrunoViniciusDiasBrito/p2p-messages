@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **92%**.
+Estimated completion against the full instruction set: **94%**.
 
 ## Completed
 
@@ -22,10 +22,11 @@ Estimated completion against the full instruction set: **92%**.
 - Initial WebCrypto infrastructure adapter for local identity key generation, P-256 envelope signatures, and AES-GCM direct-message encryption using an in-memory key store.
 - Direct-message receive path now enforces replay/expiry protections with inbox deduplication, signature verification, timestamp validation, and processed inbox entries.
 - Initial encrypted local JSON vault for sensitive adapter material using WebCrypto PBKDF2-SHA256 and AES-256-GCM behind a storage port.
+- SQLite-backed encrypted vault storage adapter for persisting encrypted key/secret records without plaintext columns.
 
 ## Remaining major work
 
-- Production composition for encrypted key storage, OS keystore integration, backup/rotation UX, and libsodium/libp2p/OpenMLS hardening.
+- Production composition for encrypted key storage with OS keystore integration, backup/rotation UX, and libsodium/libp2p/OpenMLS hardening.
 - Concrete open-source SQLite driver adapter for the daemon database port.
 - libp2p adapter with mDNS, DHT/Kademlia, secure transport, optional relay support, and real local node integration tests.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
