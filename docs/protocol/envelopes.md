@@ -30,3 +30,6 @@ The direct-message application slice treats `payload` as encrypted ciphertext pr
 ## Direct-message envelope contract
 
 `directMessageEnvelopeSchema` narrows the base transport envelope for `direct_message` traffic. It requires `toPeerId` and `conversationId`, forbids `groupId`, keeps routing metadata minimal, and is asserted by the in-memory two-node delivery test before publishing/retrying the queued envelope.
+
+
+The protocol tests include malformed direct-message envelope cases for wrong protocol versions, wrong envelope types, invalid peer IDs, missing routing fields, invalid timestamps, too-short nonces/signatures, empty payloads, forbidden group metadata, and unexpected fields.
