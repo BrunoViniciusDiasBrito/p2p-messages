@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **74%**.
+Estimated completion against the full instruction set: **80%**.
 
 ## Completed
 
@@ -17,13 +17,13 @@ Estimated completion against the full instruction set: **74%**.
 - Expanded TypeScript SDK methods for identity, contacts, conversations, direct messages, groups, webhooks, and SSE events.
 - Initial Notifications domain/application/storage slice for local in-app/API/SSE/webhook notifications, mark-read flow, and event subscriptions.
 - Initial daemon/headless lifecycle foundation with migration runner support and framework-free Node loopback HTTP server adapter.
+- Initial P2P Network domain/application slice with required peer node use cases and an in-memory local two-node transport adapter for tests.
 
 ## Remaining major work
 
 - Concrete audited crypto adapter and local encrypted key store.
 - Concrete open-source SQLite driver adapter for the daemon database port.
-- In-memory and libp2p local node integration tests.
-- P2P discovery/transports: mDNS, DHT/Kademlia, secure transport, optional relays.
+- libp2p adapter with mDNS, DHT/Kademlia, secure transport, optional relay support, and real local node integration tests.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
 - Full daemon composition that wires concrete repositories, crypto, notifications, and P2P lifecycle together.
 - SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded but not generated.

@@ -30,3 +30,7 @@ Notifications are modeled as local-first state and can be persisted in SQLite. T
 ## Daemon lifecycle foundation
 
 The daemon package can run migrations before starting the loopback API server. This prepares the offline-first local database before the app begins accepting local integration requests.
+
+## In-memory P2P test transport
+
+The infrastructure layer now includes an in-memory P2P adapter for local two-node tests. It supports discovery, explicit connection, direct envelope delivery, and unreachable status when a target peer is not connected. This is a test/development adapter only; production networking still requires the libp2p adapter with mDNS/DHT/secure transport.

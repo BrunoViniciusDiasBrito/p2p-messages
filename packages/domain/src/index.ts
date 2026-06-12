@@ -19,3 +19,4 @@ export * from './integration/external-application.js';
 export * from './integration/api-token.js';
 export * from './integration/webhook-subscription.js';
 export * from './notifications/notification.js';
+export * from './p2p/network.js';
