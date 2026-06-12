@@ -1,0 +1,10 @@
+export const initialMigrationName = '0001_initial.sql';
+export * from './database.js';
+export * from './identity-repository.js';
+export * from './contact-repositories.js';
+export * from './messaging-repositories.js';
+export * from './group-repositories.js';
+export * from './integration-repositories.js';
+export * from './notification-repository.js';
+export * from './migrations.js';
+export * from './encrypted-vault-storage.js';
