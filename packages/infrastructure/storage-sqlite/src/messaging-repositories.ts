@@ -43,6 +43,10 @@ interface InboxRow extends SqliteRow {
   processed_at: string | null;
 }
 
+interface InboxEnvelopeIdRow extends SqliteRow {
+  envelope_id: string;
+}
+
 const mapConversation = (row: ConversationRow): Conversation => Conversation.rehydrate({
   id: ConversationId.create(row.id),
   type: row.type,
@@ -171,5 +175,18 @@ export class SqliteInboxRepository implements InboxRepository {
   async exists(envelopeId: string): Promise<boolean> {
     const row = await this.db.queryOne<InboxRow>('SELECT envelope_id, from_peer_id, envelope_json, received_at, processed_at FROM inbox WHERE envelope_id = ?', [envelopeId]);
     return Boolean(row ? mapInbox(row) : null);
+  }
+  async compactProcessedBefore(cutoff: Date, limit: number): Promise<number> {
+    const rows = await this.db.query<InboxEnvelopeIdRow>(
+      `SELECT envelope_id FROM inbox
+       WHERE processed_at IS NOT NULL AND processed_at < ?
+       ORDER BY processed_at ASC
+       LIMIT ?`,
+      [cutoff.toISOString(), limit]
+    );
+    for (const row of rows) {
+      await this.db.execute('DELETE FROM inbox WHERE envelope_id = ?', [row.envelope_id]);
+    }
+    return rows.length;
   }
 }

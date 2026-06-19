@@ -8,3 +8,4 @@ export * from './integration-repositories.js';
 export * from './notification-repository.js';
 export * from './migrations.js';
 export * from './encrypted-vault-storage.js';
+export * from './node-sqlite-database.js';

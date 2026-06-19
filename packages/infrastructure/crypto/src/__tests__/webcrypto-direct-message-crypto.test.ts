@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { InMemoryWebCryptoKeyStore, WebCryptoDirectMessageCrypto, WebCryptoIdentityKeyProvider } from '../index.js';
+import {
+  InMemoryEncryptedVaultStorage,
+  InMemoryWebCryptoKeyStore,
+  PersistentWebCryptoKeyStore,
+  WebCryptoDirectMessageCrypto,
+  WebCryptoEncryptedJsonVault,
+  WebCryptoIdentityKeyProvider
+} from '../index.js';
 
 describe('WebCryptoDirectMessageCrypto', () => {
   it('generates public-key identities, signs envelopes, and encrypts direct messages with AES-GCM', async () => {
@@ -22,5 +29,29 @@ describe('WebCryptoDirectMessageCrypto', () => {
     await keys.registerPublicIdentity({ peerId: alice.peerId, publicKey: alice.publicKey });
     expect(await crypto.verifyEnvelopeSignature({ canonicalEnvelope, signature, fromPeerId: alice.peerId })).toBe(true);
     expect(await crypto.verifyEnvelopeSignature({ canonicalEnvelope: `${canonicalEnvelope}.tampered`, signature, fromPeerId: alice.peerId })).toBe(false);
+  });
+
+  it('persists private signing keys and direct-message shared secrets in the encrypted vault', async () => {
+    const storage = new InMemoryEncryptedVaultStorage();
+    const vault = new WebCryptoEncryptedJsonVault(storage, { iterations: 1_000 });
+    const firstRunKeys = new PersistentWebCryptoKeyStore(vault, 'local passphrase');
+    const provider = new WebCryptoIdentityKeyProvider(firstRunKeys);
+    const alice = await provider.generateIdentity();
+    const bob = await provider.generateIdentity();
+    await firstRunKeys.registerSharedSecret({ leftPeerId: alice.peerId, rightPeerId: bob.peerId, secret: new Uint8Array(32).fill(13) });
+
+    const firstRunCrypto = new WebCryptoDirectMessageCrypto(firstRunKeys);
+    const encrypted = await firstRunCrypto.encryptDirect({ plaintext: 'persisted secret', fromPeerId: alice.peerId, toPeerId: bob.peerId });
+    const canonicalEnvelope = JSON.stringify({ protocolVersion: '1.0', fromPeerId: alice.peerId, toPeerId: bob.peerId, payload: encrypted.encryptedPayload, nonce: encrypted.nonce });
+    const signature = await firstRunCrypto.signEnvelope({ canonicalEnvelope, fromPeerId: alice.peerId });
+
+    const secondRunKeys = new PersistentWebCryptoKeyStore(vault, 'local passphrase');
+    const secondRunCrypto = new WebCryptoDirectMessageCrypto(secondRunKeys);
+
+    await expect(secondRunCrypto.decryptDirect({ encryptedPayload: encrypted.encryptedPayload, nonce: encrypted.nonce, fromPeerId: alice.peerId, toPeerId: bob.peerId }))
+      .resolves.toBe('persisted secret');
+    await expect(secondRunCrypto.verifyEnvelopeSignature({ canonicalEnvelope, signature, fromPeerId: alice.peerId }))
+      .resolves.toBe(true);
+    expect(alice.privateKeyReference).toBe(`webcrypto-vault:p256:${alice.peerId}`);
   });
 });

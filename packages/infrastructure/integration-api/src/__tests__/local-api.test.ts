@@ -36,6 +36,16 @@ describe('LocalApiHttpHandler', () => {
     expect(response.status).toBe(403);
   });
 
+  it('allows browser calls from loopback origins with ports', async () => {
+    const handler = new LocalApiHttpHandler(useCases);
+    const response = await handler.handle(new Request('http://127.0.0.1:17345/v1/identity/public', {
+      headers: { origin: 'http://127.0.0.1:17400' }
+    }));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('access-control-allow-origin')).toBe('http://127.0.0.1:17400');
+  });
+
   it('injects bearer token into external direct message use case', async () => {
     const handler = new LocalApiHttpHandler(useCases);
     const response = await handler.handle(new Request('http://127.0.0.1:17345/v1/messages/direct', {

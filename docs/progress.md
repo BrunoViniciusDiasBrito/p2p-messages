@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Estimated completion against the full instruction set: **99%**.
+Progress is tracked by completed slices and remaining phases; no aggregate percentage is reported while major runtime work remains.
 
 ## Completed
 
@@ -13,7 +13,7 @@ Estimated completion against the full instruction set: **99%**.
 - Initial Groups domain/application slice for group creation, accepted-contact invitations, invitation acceptance/rejection, member removal, key epoch rotation, and MLS/OpenMLS adapter ports.
 - Initial SQLite repository adapters for identity, contacts, contact requests, conversations, messages, outbox, inbox, groups, and group invitations using a replaceable local database port.
 - Initial Integration domain/application slice for external apps, hash-only API tokens, permission scopes, local rate-limit port, loopback webhook subscriptions, and OpenAPI local API contract.
-- Framework-free local HTTP/SSE API adapter that routes loopback requests to use cases and rejects non-loopback hosts.
+- Framework-free local HTTP/SSE API adapter that routes loopback requests to use cases, rejects non-loopback hosts, and allows loopback browser origins with ports.
 - Expanded TypeScript SDK methods for identity, contacts, conversations, direct messages, groups, webhooks, and SSE events.
 - Initial Notifications domain/application/storage slice for local in-app/API/SSE/webhook notifications, mark-read flow, and event subscriptions.
 - Initial daemon/headless lifecycle foundation with migration runner support and framework-free Node loopback HTTP server adapter.
@@ -23,17 +23,22 @@ Estimated completion against the full instruction set: **99%**.
 - Direct-message receive path now enforces replay/expiry protections with inbox deduplication, signature verification, timestamp validation, and processed inbox entries.
 - Initial encrypted local JSON vault for sensitive adapter material using WebCrypto PBKDF2-SHA256 and AES-256-GCM behind a storage port.
 - SQLite-backed encrypted vault storage adapter for persisting encrypted key/secret records without plaintext columns.
+- Concrete Node built-in SQLite database adapter for the generic daemon database port, with foreign-key enforcement and explicit close support.
+- Persistent WebCrypto key store adapter for encrypted local P-256 signing keys and direct-message shared secrets, with private-key references persisted separately from key material.
+- Inbox replay metadata compaction use case and repository support for processed-envelope retention windows.
 - Protocol-schema-backed direct-message envelope contract and two-node delivery assertion against that contract.
 - Broader malformed direct-message envelope contract tests for protocol version, type, peer IDs, timestamps, nonce, payload, signature, and unexpected metadata.
 - SDK local API contract tests for documented URLs, bearer-token behavior, JSON request bodies, group message endpoint coverage, and typed API errors.
+- Initial static desktop preview for identity, contacts, direct messages, integration tokens, and SSE events against the local API.
 
 ## Remaining major work
 
-- Production composition for encrypted key storage with OS keystore integration, backup/rotation UX, and libsodium/libp2p/OpenMLS hardening.
-- Concrete open-source SQLite driver adapter for the daemon database port.
+- Production composition for encrypted key storage with OS keystore/passphrase unlock flow, backup/rotation UX, and libsodium/libp2p/OpenMLS hardening.
+- Daemon composition and smoke coverage for the concrete SQLite driver, plus a packaging/fallback decision for runtimes without `node:sqlite`.
 - libp2p adapter with mDNS, DHT/Kademlia, secure transport, optional relay support, and real local node integration tests.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
 - Full daemon composition that wires concrete repositories, crypto, notifications, P2P lifecycle, and direct-message delivery adapters together.
+- Daemon maintenance scheduling for inbox replay metadata compaction.
 - SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded and contract-tested but not generated.
-- Tauri 2 + Vue desktop UI.
+- Tauri 2 + Vue migration for the static desktop preview.
 - Notifications UI/desktop adapter wiring, E2E tests, and hardening pass.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Contact, Conversation, ConversationId, InboxEntry, Message, OutboxEntry, PeerId } from '@peercomms/domain';
-import { NoopDomainEventBus, ReceiveDirectMessageUseCase, SendDirectMessageUseCase, RetryOutboxMessagesUseCase, type ConversationRepository, type DirectMessageCryptoPort, type EnvelopePublisherPort, type IdGenerator, type InboxRepository, type MessageRepository, type OutboxRepository } from '../index.js';
+import { CompactInboxReplayMetadataUseCase, NoopDomainEventBus, ReceiveDirectMessageUseCase, SendDirectMessageUseCase, RetryOutboxMessagesUseCase, type ConversationRepository, type DirectMessageCryptoPort, type EnvelopePublisherPort, type IdGenerator, type InboxRepository, type MessageRepository, type OutboxRepository } from '../index.js';
 import type { ContactRepository } from '../ports/contact-ports.js';
 
 
@@ -28,6 +28,15 @@ class InMemoryInboxRepository implements InboxRepository {
   private readonly rows = new Map<string, InboxEntry>();
   async save(entry: InboxEntry): Promise<void> { this.rows.set(entry.snapshot.envelopeId, entry); }
   async exists(envelopeId: string): Promise<boolean> { return this.rows.has(envelopeId); }
+  async compactProcessedBefore(cutoff: Date, limit: number): Promise<number> {
+    const envelopeIds = [...this.rows.values()]
+      .filter((entry) => entry.snapshot.processedAt !== undefined && entry.snapshot.processedAt < cutoff)
+      .sort((left, right) => left.snapshot.processedAt!.getTime() - right.snapshot.processedAt!.getTime())
+      .slice(0, limit)
+      .map((entry) => entry.snapshot.envelopeId);
+    for (const envelopeId of envelopeIds) this.rows.delete(envelopeId);
+    return envelopeIds.length;
+  }
 }
 
 class InMemoryOutboxRepository implements OutboxRepository {
@@ -145,5 +154,40 @@ describe('messaging use cases', () => {
 
     const result = await new RetryOutboxMessagesUseCase(outbox, publisher).execute({ now: new Date() });
     expect(result.ok && result.value.published).toBe(1);
+  });
+
+  it('compacts processed inbox replay metadata older than the retention window', async () => {
+    const inbox = new InMemoryInboxRepository();
+    const oldProcessed = InboxEntry.receive({
+      envelopeId: 'env_old_processed',
+      fromPeerId: 'pc_senderpeer123456',
+      envelopeJson: '{}',
+      receivedAt: new Date('2026-04-01T00:00:00.000Z')
+    });
+    oldProcessed.markProcessed(new Date('2026-04-01T00:00:01.000Z'));
+    const recentProcessed = InboxEntry.receive({
+      envelopeId: 'env_recent_processed',
+      fromPeerId: 'pc_senderpeer123456',
+      envelopeJson: '{}',
+      receivedAt: new Date('2026-06-10T00:00:00.000Z')
+    });
+    recentProcessed.markProcessed(new Date('2026-06-10T00:00:01.000Z'));
+    const unprocessed = InboxEntry.receive({
+      envelopeId: 'env_old_unprocessed',
+      fromPeerId: 'pc_senderpeer123456',
+      envelopeJson: '{}',
+      receivedAt: new Date('2026-04-01T00:00:00.000Z')
+    });
+    await inbox.save(oldProcessed);
+    await inbox.save(recentProcessed);
+    await inbox.save(unprocessed);
+
+    const result = await new CompactInboxReplayMetadataUseCase(inbox)
+      .execute({ now: new Date('2026-06-18T00:00:00.000Z'), retentionDays: 30, limit: 10 });
+
+    expect(result.ok && result.value.deleted).toBe(1);
+    expect(await inbox.exists('env_old_processed')).toBe(false);
+    expect(await inbox.exists('env_recent_processed')).toBe(true);
+    expect(await inbox.exists('env_old_unprocessed')).toBe(true);
   });
 });

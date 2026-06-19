@@ -22,6 +22,7 @@ export interface OutboxRepository {
 export interface InboxRepository {
   save(entry: InboxEntry): Promise<void>;
   exists(envelopeId: string): Promise<boolean>;
+  compactProcessedBefore(cutoff: Date, limit: number): Promise<number>;
 }
 
 export interface DirectMessageCryptoPort {

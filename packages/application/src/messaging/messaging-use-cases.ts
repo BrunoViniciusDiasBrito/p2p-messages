@@ -203,3 +203,18 @@ export class RetryOutboxMessagesUseCase {
     return ok({ published, queued });
   }
 }
+
+export class CompactInboxReplayMetadataUseCase {
+  constructor(private readonly inbox: InboxRepository) {}
+
+  async execute(input: { now?: Date; retentionDays?: number; limit?: number } = {}): Promise<Result<{ deleted: number; cutoff: string }>> {
+    const retentionDays = input.retentionDays ?? 30;
+    const limit = input.limit ?? 500;
+    if (!Number.isInteger(retentionDays) || retentionDays < 1) return err(new Error('Inbox replay retention must be at least one day'));
+    if (!Number.isInteger(limit) || limit < 1) return err(new Error('Inbox replay compaction limit must be at least one'));
+    const now = input.now ?? new Date();
+    const cutoff = new Date(now.getTime() - retentionDays * 24 * 60 * 60 * 1000);
+    const deleted = await this.inbox.compactProcessedBefore(cutoff, limit);
+    return ok({ deleted, cutoff: cutoff.toISOString() });
+  }
+}

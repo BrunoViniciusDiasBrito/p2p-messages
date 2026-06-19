@@ -60,6 +60,15 @@ export class InMemoryInboxRepository implements InboxRepository {
   private readonly rows = new Map<string, InboxEntry>();
   async save(entry: InboxEntry): Promise<void> { this.rows.set(entry.snapshot.envelopeId, entry); }
   async exists(envelopeId: string): Promise<boolean> { return this.rows.has(envelopeId); }
+  async compactProcessedBefore(cutoff: Date, limit: number): Promise<number> {
+    const envelopeIds = [...this.rows.values()]
+      .filter((entry) => entry.snapshot.processedAt !== undefined && entry.snapshot.processedAt < cutoff)
+      .sort((left, right) => left.snapshot.processedAt!.getTime() - right.snapshot.processedAt!.getTime())
+      .slice(0, limit)
+      .map((entry) => entry.snapshot.envelopeId);
+    for (const envelopeId of envelopeIds) this.rows.delete(envelopeId);
+    return envelopeIds.length;
+  }
 }
 import { Group, GroupId, GroupInvitation } from '@peercomms/domain';
 import { GroupInvitationRepository, GroupRepository } from '@peercomms/application';

@@ -1,5 +1,6 @@
 import { webcrypto } from 'node:crypto';
 import type { DirectMessageCryptoPort, GeneratedIdentityMaterial, IdentityKeyProvider } from '@peercomms/application';
+import { WebCryptoEncryptedJsonVault } from './encrypted-json-vault.js';
 
 const cryptoImpl = globalThis.crypto ?? webcrypto;
 const subtle = cryptoImpl.subtle;
@@ -29,7 +30,54 @@ export interface WebCryptoIdentityRecord {
   readonly fingerprint: string;
 }
 
-export class InMemoryWebCryptoKeyStore {
+export interface WebCryptoKeyStore {
+  createIdentity(): Promise<WebCryptoIdentityRecord>;
+  registerPublicIdentity(input: { peerId: string; publicKey: string }): Promise<void>;
+  registerSharedSecret(input: { leftPeerId: string; rightPeerId: string; secret: Uint8Array }): Promise<void>;
+  getSigningKey(peerId: string): Promise<CryptoKey>;
+  getVerificationKey(peerId: string): Promise<CryptoKey>;
+  getSharedSecret(leftPeerId: string, rightPeerId: string): Promise<CryptoKey>;
+}
+
+interface PersistedIdentityKey {
+  readonly version: 1;
+  readonly algorithm: 'ECDSA-P-256';
+  readonly peerId: string;
+  readonly publicKey: string;
+  readonly privateKeyReference: string;
+  readonly fingerprint: string;
+  readonly privateJwk: JsonWebKey;
+}
+
+interface PersistedSharedSecret {
+  readonly version: 1;
+  readonly algorithm: 'AES-256-GCM-SHA256';
+  readonly leftPeerId: string;
+  readonly rightPeerId: string;
+  readonly secret: string;
+}
+
+const identityVaultKey = (peerId: string): string => `webcrypto.identity.${peerId}`;
+const sharedSecretVaultKey = (leftPeerId: string, rightPeerId: string): string => `webcrypto.direct-secret.${pairKey(leftPeerId, rightPeerId)}`;
+
+const importVerificationKey = async (publicKey: string): Promise<CryptoKey> => {
+  if (!publicKey.startsWith('p256-spki.')) throw new Error('Unsupported public key format');
+  return subtle.importKey(
+    'spki',
+    toArrayBuffer(fromBase64Url(publicKey.slice('p256-spki.'.length))),
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['verify']
+  );
+};
+
+const importSharedSecret = async (secret: Uint8Array): Promise<CryptoKey> => {
+  if (secret.byteLength < 32) throw new Error('Direct-message shared secret must be at least 32 bytes');
+  const digest = await subtle.digest('SHA-256', toArrayBuffer(secret));
+  return subtle.importKey('raw', digest, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+};
+
+export class InMemoryWebCryptoKeyStore implements WebCryptoKeyStore {
   private readonly signingPrivateKeys = new Map<string, CryptoKey>();
   private readonly verificationPublicKeys = new Map<string, CryptoKey>();
   private readonly sharedSecrets = new Map<string, CryptoKey>();
@@ -52,45 +100,135 @@ export class InMemoryWebCryptoKeyStore {
   }
 
   async registerPublicIdentity(input: { peerId: string; publicKey: string }): Promise<void> {
-    if (!input.publicKey.startsWith('p256-spki.')) throw new Error('Unsupported public key format');
-    const publicKey = await subtle.importKey(
-      'spki',
-      toArrayBuffer(fromBase64Url(input.publicKey.slice('p256-spki.'.length))),
-      { name: 'ECDSA', namedCurve: 'P-256' },
-      false,
-      ['verify']
-    );
-    this.verificationPublicKeys.set(input.peerId, publicKey);
+    this.verificationPublicKeys.set(input.peerId, await importVerificationKey(input.publicKey));
   }
 
   async registerSharedSecret(input: { leftPeerId: string; rightPeerId: string; secret: Uint8Array }): Promise<void> {
-    if (input.secret.byteLength < 32) throw new Error('Direct-message shared secret must be at least 32 bytes');
-    const digest = await subtle.digest('SHA-256', toArrayBuffer(input.secret));
-    const key = await subtle.importKey('raw', digest, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-    this.sharedSecrets.set(pairKey(input.leftPeerId, input.rightPeerId), key);
+    this.sharedSecrets.set(pairKey(input.leftPeerId, input.rightPeerId), await importSharedSecret(input.secret));
   }
 
-  getSigningKey(peerId: string): CryptoKey {
+  async getSigningKey(peerId: string): Promise<CryptoKey> {
     const key = this.signingPrivateKeys.get(peerId);
     if (!key) throw new Error('Missing local signing key for peer');
     return key;
   }
 
-  getVerificationKey(peerId: string): CryptoKey {
+  async getVerificationKey(peerId: string): Promise<CryptoKey> {
     const key = this.verificationPublicKeys.get(peerId);
     if (!key) throw new Error('Missing verification key for peer');
     return key;
   }
 
-  getSharedSecret(leftPeerId: string, rightPeerId: string): CryptoKey {
+  async getSharedSecret(leftPeerId: string, rightPeerId: string): Promise<CryptoKey> {
     const key = this.sharedSecrets.get(pairKey(leftPeerId, rightPeerId));
     if (!key) throw new Error('Missing direct-message shared secret for peer pair');
     return key;
   }
 }
 
+export class PersistentWebCryptoKeyStore implements WebCryptoKeyStore {
+  private readonly signingPrivateKeys = new Map<string, CryptoKey>();
+  private readonly verificationPublicKeys = new Map<string, CryptoKey>();
+  private readonly sharedSecrets = new Map<string, CryptoKey>();
+
+  constructor(
+    private readonly vault: WebCryptoEncryptedJsonVault,
+    private readonly passphrase: string
+  ) {}
+
+  async createIdentity(): Promise<WebCryptoIdentityRecord> {
+    const keyPair = await subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['sign', 'verify']
+    ) as CryptoKeyPair;
+    const spki = new Uint8Array(await subtle.exportKey('spki', keyPair.publicKey));
+    const publicKey = `p256-spki.${toBase64Url(spki)}`;
+    const digest = new Uint8Array(await subtle.digest('SHA-256', spki));
+    const peerId = `pc_${toBase64Url(digest).slice(0, 32)}`;
+    const fingerprint = `sha256:${toBase64Url(digest)}`;
+    const privateKeyReference = `webcrypto-vault:p256:${peerId}`;
+    const privateJwk = await subtle.exportKey('jwk', keyPair.privateKey);
+
+    await this.vault.putJson<PersistedIdentityKey>(identityVaultKey(peerId), {
+      version: 1,
+      algorithm: 'ECDSA-P-256',
+      peerId,
+      publicKey,
+      privateKeyReference,
+      fingerprint,
+      privateJwk
+    }, this.passphrase);
+
+    this.signingPrivateKeys.set(peerId, keyPair.privateKey);
+    this.verificationPublicKeys.set(peerId, keyPair.publicKey);
+    return { peerId, publicKey, privateKeyReference, fingerprint };
+  }
+
+  async registerPublicIdentity(input: { peerId: string; publicKey: string }): Promise<void> {
+    this.verificationPublicKeys.set(input.peerId, await importVerificationKey(input.publicKey));
+  }
+
+  async registerSharedSecret(input: { leftPeerId: string; rightPeerId: string; secret: Uint8Array }): Promise<void> {
+    const key = await importSharedSecret(input.secret);
+    await this.vault.putJson<PersistedSharedSecret>(sharedSecretVaultKey(input.leftPeerId, input.rightPeerId), {
+      version: 1,
+      algorithm: 'AES-256-GCM-SHA256',
+      leftPeerId: input.leftPeerId,
+      rightPeerId: input.rightPeerId,
+      secret: toBase64Url(input.secret)
+    }, this.passphrase);
+    this.sharedSecrets.set(pairKey(input.leftPeerId, input.rightPeerId), key);
+  }
+
+  async getSigningKey(peerId: string): Promise<CryptoKey> {
+    const cached = this.signingPrivateKeys.get(peerId);
+    if (cached) return cached;
+    const persisted = await this.readPersistedIdentity(peerId);
+    const privateKey = await subtle.importKey(
+      'jwk',
+      persisted.privateJwk,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['sign']
+    );
+    this.signingPrivateKeys.set(peerId, privateKey);
+    return privateKey;
+  }
+
+  async getVerificationKey(peerId: string): Promise<CryptoKey> {
+    const cached = this.verificationPublicKeys.get(peerId);
+    if (cached) return cached;
+    const persisted = await this.readPersistedIdentity(peerId);
+    const publicKey = await importVerificationKey(persisted.publicKey);
+    this.verificationPublicKeys.set(peerId, publicKey);
+    return publicKey;
+  }
+
+  async getSharedSecret(leftPeerId: string, rightPeerId: string): Promise<CryptoKey> {
+    const cacheKey = pairKey(leftPeerId, rightPeerId);
+    const cached = this.sharedSecrets.get(cacheKey);
+    if (cached) return cached;
+    const persisted = await this.vault.getJson<PersistedSharedSecret>(sharedSecretVaultKey(leftPeerId, rightPeerId), this.passphrase);
+    if (!persisted || persisted.version !== 1 || persisted.algorithm !== 'AES-256-GCM-SHA256') {
+      throw new Error('Missing direct-message shared secret for peer pair');
+    }
+    const key = await importSharedSecret(fromBase64Url(persisted.secret));
+    this.sharedSecrets.set(cacheKey, key);
+    return key;
+  }
+
+  private async readPersistedIdentity(peerId: string): Promise<PersistedIdentityKey> {
+    const persisted = await this.vault.getJson<PersistedIdentityKey>(identityVaultKey(peerId), this.passphrase);
+    if (!persisted || persisted.version !== 1 || persisted.algorithm !== 'ECDSA-P-256' || persisted.peerId !== peerId) {
+      throw new Error('Missing local signing key for peer');
+    }
+    return persisted;
+  }
+}
+
 export class WebCryptoIdentityKeyProvider implements IdentityKeyProvider {
-  constructor(private readonly keys: InMemoryWebCryptoKeyStore) {}
+  constructor(private readonly keys: WebCryptoKeyStore) {}
 
   async generateIdentity(): Promise<GeneratedIdentityMaterial> {
     const identity = await this.keys.createIdentity();
@@ -103,12 +241,12 @@ export class WebCryptoIdentityKeyProvider implements IdentityKeyProvider {
 }
 
 export class WebCryptoDirectMessageCrypto implements DirectMessageCryptoPort {
-  constructor(private readonly keys: InMemoryWebCryptoKeyStore) {}
+  constructor(private readonly keys: WebCryptoKeyStore) {}
 
   async encryptDirect(input: { plaintext: string; fromPeerId: string; toPeerId: string }): Promise<{ encryptedPayload: string; nonce: string }> {
     const nonce = new Uint8Array(12);
     cryptoImpl.getRandomValues(nonce);
-    const key = this.keys.getSharedSecret(input.fromPeerId, input.toPeerId);
+    const key = await this.keys.getSharedSecret(input.fromPeerId, input.toPeerId);
     const ciphertext = new Uint8Array(await subtle.encrypt({ name: 'AES-GCM', iv: toArrayBuffer(nonce) }, key, textEncoder.encode(input.plaintext)));
     return { encryptedPayload: `aes256gcm.${toBase64Url(ciphertext)}`, nonce: toBase64Url(nonce) };
   }
@@ -116,7 +254,7 @@ export class WebCryptoDirectMessageCrypto implements DirectMessageCryptoPort {
   async decryptDirect(input: { encryptedPayload: string; fromPeerId: string; toPeerId: string; nonce?: string }): Promise<string> {
     if (!input.encryptedPayload.startsWith('aes256gcm.')) throw new Error('Unsupported direct-message payload format');
     if (!input.nonce) throw new Error('AES-GCM direct-message decryption requires nonce');
-    const key = this.keys.getSharedSecret(input.fromPeerId, input.toPeerId);
+    const key = await this.keys.getSharedSecret(input.fromPeerId, input.toPeerId);
     const plaintext = await subtle.decrypt(
       { name: 'AES-GCM', iv: toArrayBuffer(fromBase64Url(input.nonce)) },
       key,
@@ -128,7 +266,7 @@ export class WebCryptoDirectMessageCrypto implements DirectMessageCryptoPort {
   async signEnvelope(input: { canonicalEnvelope: string; fromPeerId: string }): Promise<string> {
     const signature = new Uint8Array(await subtle.sign(
       { name: 'ECDSA', hash: 'SHA-256' },
-      this.keys.getSigningKey(input.fromPeerId),
+      await this.keys.getSigningKey(input.fromPeerId),
       textEncoder.encode(input.canonicalEnvelope)
     ));
     return `ecdsa-p256-sha256.${toBase64Url(signature)}`;
@@ -138,7 +276,7 @@ export class WebCryptoDirectMessageCrypto implements DirectMessageCryptoPort {
     if (!input.signature.startsWith('ecdsa-p256-sha256.')) return false;
     return subtle.verify(
       { name: 'ECDSA', hash: 'SHA-256' },
-      this.keys.getVerificationKey(input.fromPeerId),
+      await this.keys.getVerificationKey(input.fromPeerId),
       toArrayBuffer(fromBase64Url(input.signature.slice('ecdsa-p256-sha256.'.length))),
       textEncoder.encode(input.canonicalEnvelope)
     );

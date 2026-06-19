@@ -22,8 +22,10 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - Initial direct-message domain/application slice with accepted-contact enforcement, crypto/signature ports, persistent outbox model, inbox deduplication model, and retry backoff use case.
 - Initial group domain/application slice with group creation, invitations for accepted contacts, invite acceptance/rejection, member removal, key epoch rotation, and MLS/OpenMLS crypto port boundaries.
 - Initial SQLite repository adapters for identity, contacts, messaging mailboxes, groups, and invitations behind a generic local database port.
+- Concrete Node built-in SQLite database adapter for the local database port.
 - Initial local integration model for external apps, hash-only API tokens, scoped permissions, local rate-limit boundary, loopback webhook subscriptions, and an OpenAPI v1 contract.
 - Framework-free local HTTP/SSE API adapter for loopback requests plus expanded TypeScript SDK coverage for the current local API surface.
+- Loopback-origin CORS handling for local browser/Tauri preview surfaces.
 - Initial local notifications model/use cases/storage for in-app, local API, SSE and webhook channels.
 - Initial daemon/headless lifecycle foundation with migration runner support and framework-free Node loopback HTTP server adapter.
 - Initial P2P Network context with required peer-node use cases and in-memory two-node transport for local tests.
@@ -32,9 +34,12 @@ PeerComms is a decentralized, offline-first, peer-to-peer communication platform
 - Direct-message receive hardening for duplicate replay, expired envelopes, invalid timestamps, and tampered signatures.
 - Initial encrypted JSON vault adapter for sensitive local material using WebCrypto PBKDF2-SHA256 and AES-256-GCM behind a storage port.
 - SQLite-backed encrypted vault storage adapter for persisting encrypted key/secret records without plaintext columns.
+- Persistent WebCrypto key store adapter for encrypted local signing keys and shared direct-message secrets.
+- Inbox replay metadata compaction use case and repository support for processed-envelope retention windows.
 - Protocol-schema-backed direct-message envelope contract, asserted in the local two-node delivery flow.
 - Malformed direct-message envelope contract tests for invalid versions, types, peer IDs, timestamps, nonce, payload, signature, and unknown metadata.
 - SDK local API contract tests for documented URLs, bearer-token behavior, JSON request bodies, group message endpoint coverage, and typed API errors.
+- Initial static desktop preview for identity, contacts, direct messages, integration tokens, and SSE events against the local API.
 
 ## Connectivity honesty
 
@@ -56,6 +61,7 @@ pnpm install
 pnpm test
 pnpm typecheck
 pnpm build
+pnpm --filter @peercomms/desktop dev
 ```
 
 ## Security posture
@@ -70,16 +76,16 @@ See:
 
 ## Progress
 
-Estimated completion against the full instruction set: **99%**. See [implementation progress](docs/progress.md).
+Progress is tracked by completed slices and remaining phases; no aggregate percentage is reported while major runtime, network, and desktop work remains. See [implementation progress](docs/progress.md).
 
 ## Prioritized TODO
 
-1. Compose the encrypted vault with an OS keystore/passphrase unlock flow in the daemon.
-2. Implement a concrete open-source SQLite driver adapter for the daemon database port.
-3. Add OpenAPI generation verification and daemon composition smoke command.
-4. Add persistent replay metadata compaction/retention policy for inbox history.
+1. Compose the encrypted vault/key store with an OS keystore/passphrase unlock flow in the daemon.
+2. Wire the concrete SQLite driver into the daemon composition root and add a smoke command.
+3. Add OpenAPI generation verification.
+4. Schedule persistent replay metadata compaction/retention in the daemon maintenance loop.
 5. Add libp2p adapter with mDNS local discovery, secure transport, optional DHT/bootstrap and optional relay support.
 6. Wire concrete repositories, crypto, notification publishing and P2P lifecycle into the daemon composition root.
 7. Add SDK generation pipeline from the OpenAPI contract and replace/verify the handwritten SDK.
 8. Implement concrete MLS/OpenMLS group-message adapter and group message transport.
-9. Wire notification channels into daemon/UI adapters and scaffold Tauri/Vue desktop UI after daemon APIs stabilize.
+9. Migrate the static desktop preview to Tauri 2 + Vue and wire notification channels into daemon/UI adapters.

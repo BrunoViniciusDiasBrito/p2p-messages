@@ -1,13 +1,13 @@
 # PeerComms prioritized technical TODO
 
-Current estimated completion: **99%**.
+Progress is tracked by the phase checklist below; an aggregate percentage would be misleading while major runtime work remains.
 
 ## Phase 3
 
-- Implement a concrete SQLite driver adapter such as better-sqlite3/sql.js/libsql-compatible local mode for the daemon database port.
-- Compose the encrypted vault with an OS keystore/passphrase unlock flow in the daemon for private key references and shared secrets.
-- Add OpenAPI generation verification and daemon composition smoke command.
-- Add persistent replay metadata compaction/retention policy for inbox history.
+- Wire the concrete SQLite driver adapter into the daemon composition root and add a smoke command.
+- Compose the encrypted vault/key store with an OS keystore/passphrase unlock flow in the daemon for private key references and shared secrets.
+- Add OpenAPI generation verification.
+- Schedule the persistent replay metadata compaction/retention policy in the daemon maintenance loop.
 
 ## Phase 4
 
@@ -19,4 +19,4 @@ Current estimated completion: **99%**.
 - Implement concrete MLS/OpenMLS adapter and encrypted group-message send/receive flow.
 - Add local REST/SSE API with scoped tokens and rate limits.
 - Generate SDK from `packages/protocol/openapi/local-api.v1.yaml` and keep contract tests aligned with the local API adapter.
-- Wire notification publishers to daemon/UI adapters and scaffold Tauri/Vue desktop app.
+- Migrate the static desktop preview to Tauri 2 + Vue and wire notification publishers to daemon/UI adapters.
