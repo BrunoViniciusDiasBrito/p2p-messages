@@ -26,19 +26,20 @@ Progress is tracked by completed slices and remaining phases; no aggregate perce
 - Concrete Node built-in SQLite database adapter for the generic daemon database port, with foreign-key enforcement and explicit close support.
 - Persistent WebCrypto key store adapter for encrypted local P-256 signing keys and direct-message shared secrets, with private-key references persisted separately from key material.
 - Inbox replay metadata compaction use case and repository support for processed-envelope retention windows.
+- SQLite daemon composition with package migration loading, graceful database shutdown, and scheduled replay-metadata compaction support.
 - Protocol-schema-backed direct-message envelope contract and two-node delivery assertion against that contract.
 - Broader malformed direct-message envelope contract tests for protocol version, type, peer IDs, timestamps, nonce, payload, signature, and unexpected metadata.
 - SDK local API contract tests for documented URLs, bearer-token behavior, JSON request bodies, group message endpoint coverage, and typed API errors.
+- OpenAPI/SDK verification command that compares documented local API operations with the SDK's actual request paths.
 - Initial static desktop preview for identity, contacts, direct messages, integration tokens, and SSE events against the local API.
 
 ## Remaining major work
 
 - Production composition for encrypted key storage with OS keystore/passphrase unlock flow, backup/rotation UX, and libsodium/libp2p/OpenMLS hardening.
-- Daemon composition and smoke coverage for the concrete SQLite driver, plus a packaging/fallback decision for runtimes without `node:sqlite`.
+- Runtime composition for encrypted key storage with an OS keystore/passphrase unlock flow, plus a packaging/fallback decision for runtimes without `node:sqlite`.
 - libp2p adapter with mDNS, DHT/Kademlia, secure transport, optional relay support, and real local node integration tests.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
 - Full daemon composition that wires concrete repositories, crypto, notifications, P2P lifecycle, and direct-message delivery adapters together.
-- Daemon maintenance scheduling for inbox replay metadata compaction.
-- SDK generation pipeline from OpenAPI; handwritten SDK is currently expanded and contract-tested but not generated.
+- SDK generation pipeline from OpenAPI; the handwritten SDK is contract-verified but not yet generated.
 - Tauri 2 + Vue migration for the static desktop preview.
 - Notifications UI/desktop adapter wiring, E2E tests, and hardening pass.

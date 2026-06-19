@@ -4,10 +4,7 @@ Progress is tracked by the phase checklist below; an aggregate percentage would 
 
 ## Phase 3
 
-- Wire the concrete SQLite driver adapter into the daemon composition root and add a smoke command.
 - Compose the encrypted vault/key store with an OS keystore/passphrase unlock flow in the daemon for private key references and shared secrets.
-- Add OpenAPI generation verification.
-- Schedule the persistent replay metadata compaction/retention policy in the daemon maintenance loop.
 
 ## Phase 4
 

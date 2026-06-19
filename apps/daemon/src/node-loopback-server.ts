@@ -17,10 +17,22 @@ export class NodeLoopbackServer implements LoopbackServerPort {
         nodeResponse.end(JSON.stringify({ error: error instanceof Error ? error.message : 'Unexpected daemon error' }));
       }
     });
-    await new Promise<void>((resolve, reject) => {
-      this.server.once('error', reject);
-      this.server.listen(input.port, input.host, () => resolve());
-    });
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const onError = (error: Error) => {
+          this.server?.off('error', onError);
+          reject(error);
+        };
+        this.server.once('error', onError);
+        this.server.listen(input.port, input.host, () => {
+          this.server?.off('error', onError);
+          resolve();
+        });
+      });
+    } catch (error) {
+      this.server = null;
+      throw error;
+    }
     return { url: `http://${input.host}:${input.port}` };
   }
 
