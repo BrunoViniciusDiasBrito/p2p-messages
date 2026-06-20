@@ -313,6 +313,70 @@ h2 {
   align-items: end;
 }
 
+.guide-panel {
+  scroll-margin-top: 14px;
+}
+
+.guide-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 18px;
+  margin: 0;
+  padding: 0;
+  counter-reset: guide-step;
+  list-style: none;
+}
+
+.guide-steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 9px;
+  align-content: start;
+  border-top: 1px solid var(--line);
+  padding: 10px 0 0;
+}
+
+.guide-steps li::before {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  grid-row: span 2;
+  place-items: center;
+  border: 1px solid #9ab9bd;
+  border-radius: 50%;
+  background: #edf9f8;
+  color: var(--accent-strong);
+  content: counter(guide-step);
+  counter-increment: guide-step;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.guide-steps strong,
+.guide-note strong {
+  line-height: 1.35;
+}
+
+.guide-steps span,
+.guide-note span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.guide-note {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: #f2fbfa;
+  padding: 10px 12px;
+}
+
+code {
+  overflow-wrap: anywhere;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
@@ -363,40 +427,26 @@ label span {
   padding: 0;
 }
 
-.field-help::after {
-  position: absolute;
-  z-index: 20;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  width: min(260px, 65vw);
-  transform: translateX(-50%);
-  border: 1px solid #32414a;
-  border-radius: 6px;
-  background: #18252d;
-  box-shadow: 0 8px 20px rgba(23, 32, 38, 0.2);
-  color: #f4f8fa;
-  content: attr(data-tooltip);
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.4;
-  opacity: 0;
-  padding: 8px 10px;
-  pointer-events: none;
-  text-align: left;
-  transition: opacity 120ms ease;
-  visibility: hidden;
-}
-
-.field-help:hover::after,
-.field-help:focus-visible::after {
-  opacity: 1;
-  visibility: visible;
-}
-
 .field-help:focus-visible {
   outline: 2px solid rgba(8, 127, 140, 0.35);
   outline-offset: 2px;
+}
+
+.global-help-tooltip {
+  position: fixed;
+  z-index: 1000;
+  width: min(300px, calc(100vw - 24px));
+  border: 1px solid #32414a;
+  border-radius: 6px;
+  background: #18252d;
+  box-shadow: 0 8px 20px rgba(23, 32, 38, 0.24);
+  color: #f4f8fa;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  padding: 9px 10px;
+  pointer-events: none;
+  text-align: left;
 }
 
 input,
@@ -589,6 +639,7 @@ textarea:focus {
     z-index: 10;
     height: auto;
     min-height: auto;
+    gap: 12px;
     overflow-x: auto;
     overflow-y: hidden;
   }
@@ -599,10 +650,17 @@ textarea:focus {
   }
 
   .nav-list {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    display: flex;
+    width: max-content;
+    min-width: 100%;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
   }
 
   .nav-item {
+    flex: 0 0 auto;
+    min-width: 104px;
     text-align: center;
   }
 
@@ -611,6 +669,10 @@ textarea:focus {
   .content-grid,
   .split-panel {
     grid-template-columns: 1fr;
+  }
+
+  .guide-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -633,6 +695,41 @@ textarea:focus {
   }
 
   .nav-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: max-content;
+  }
+
+  .sidebar {
+    padding: 10px 12px;
+  }
+
+  .brand {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .workspace-panel {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .guide-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-note {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .global-help-tooltip {
+    font-size: 13px;
+  }
+
+  .status-pill {
+    white-space: normal;
   }
 }

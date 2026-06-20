@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 
 type JsonRecord = Record<string, unknown>;
 type StatusKind = 'idle' | 'ok' | 'warn' | 'error';
@@ -36,6 +36,7 @@ const messages = ref<unknown>({});
 const eventFeed = ref<Array<{ type: string; data: unknown; at: string }>>([]);
 const status = reactive<{ kind: StatusKind; text: string }>({ kind: 'idle', text: 'API inativa' });
 const toast = ref('');
+const helpTooltip = reactive({ visible: false, text: '', left: 0, top: 0, placement: 'below' as 'above' | 'below' });
 const contactForm = reactive({ localPeerId: '', remotePeerId: '', message: '' });
 const messageForm = reactive({ fromPeerId: '', toPeerId: '', text: '' });
 const integrationForm = reactive({ name: 'Desktop', appId: '', scopes: ['messages:send', 'notifications:subscribe'] as string[] });
@@ -44,13 +45,22 @@ let toastTimer: number | undefined;
 
 const connectionSummary = computed(() => settings.token ? `Conectado a ${settings.baseUrl}` : `Sem token em ${settings.baseUrl}`);
 const statusClass = computed(() => `status-${status.kind}`);
+const helpTooltipStyle = computed(() => ({
+  left: `${helpTooltip.left}px`,
+  top: `${helpTooltip.top}px`,
+  transform: helpTooltip.placement === 'above' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)'
+}));
 
 onMounted(() => {
+  window.addEventListener('resize', hideHelp);
+  window.addEventListener('scroll', hideHelp, true);
   void refreshAll();
 });
 
 onBeforeUnmount(() => {
   eventSource?.close();
+  window.removeEventListener('resize', hideHelp);
+  window.removeEventListener('scroll', hideHelp, true);
   if (toastTimer) window.clearTimeout(toastTimer);
 });
 
@@ -219,6 +229,39 @@ function showSystemNotification(notification: JsonRecord): void {
     body: typeof notification.body === 'string' ? notification.body : String(notification.type ?? 'Novo evento')
   });
 }
+
+function showHelp(event: Event): void {
+  const source = event.target instanceof Element ? event.target : null;
+  const target = source?.closest<HTMLElement>('.field-help') ?? null;
+  const text = target?.dataset.tooltip;
+  if (!target || !text) return;
+  const rect = target.getBoundingClientRect();
+  const margin = 12;
+  const tooltipWidth = Math.min(300, window.innerWidth - margin * 2);
+  helpTooltip.text = text;
+  helpTooltip.left = Math.min(Math.max(rect.left + rect.width / 2, margin + tooltipWidth / 2), window.innerWidth - margin - tooltipWidth / 2);
+  helpTooltip.placement = rect.top > 116 ? 'above' : 'below';
+  helpTooltip.top = helpTooltip.placement === 'above' ? rect.top - 8 : rect.bottom + 8;
+  helpTooltip.visible = true;
+
+  void nextTick(() => {
+    const tooltip = document.getElementById('global-help-tooltip');
+    if (!tooltip || !helpTooltip.visible) return;
+    const bounds = tooltip.getBoundingClientRect();
+    if (helpTooltip.placement === 'below' && bounds.bottom > window.innerHeight - margin && rect.top > bounds.height + margin) {
+      helpTooltip.placement = 'above';
+      helpTooltip.top = rect.top - 8;
+    }
+    if (helpTooltip.placement === 'above' && bounds.top < margin && window.innerHeight - rect.bottom > bounds.height + margin) {
+      helpTooltip.placement = 'below';
+      helpTooltip.top = rect.bottom + 8;
+    }
+  });
+}
+
+function hideHelp(): void {
+  helpTooltip.visible = false;
+}
 </script>
 
 <template>
@@ -229,6 +272,7 @@ function showSystemNotification(notification: JsonRecord): void {
         <div><strong>PeerComms</strong><span>No local</span></div>
       </div>
       <nav class="nav-list">
+        <a class="nav-item" href="#guia">Guia</a>
         <a class="nav-item is-active" href="#identidade">Identidade</a>
         <a class="nav-item" href="#contatos">Contatos</a>
         <a class="nav-item" href="#mensagens">Mensagens</a>
@@ -239,7 +283,7 @@ function showSystemNotification(notification: JsonRecord): void {
       </nav>
     </aside>
 
-    <main class="workspace">
+    <main class="workspace" @mouseover="showHelp" @focusin="showHelp" @mouseout="hideHelp" @focusout="hideHelp" @scroll="hideHelp">
       <header class="topbar">
         <div><h1>PeerComms Console</h1><span class="subtle">{{ connectionSummary }}</span></div>
         <div class="status-strip"><span class="status-pill" :class="statusClass">{{ status.text }}</span><button class="primary-button" type="button" @click="refreshAll">Atualizar</button></div>
@@ -252,6 +296,19 @@ function showSystemNotification(notification: JsonRecord): void {
           <label><span class="field-label">Token bearer <button class="field-help" type="button" aria-label="Ajuda sobre token bearer" data-tooltip="Credencial gerada para este app. Ela libera somente os escopos selecionados e fica salva neste dispositivo.">i</button></span><input v-model="settings.token" type="password" autocomplete="current-password" spellcheck="false"></label>
           <button class="primary-button" type="submit">Salvar</button>
         </form>
+      </section>
+
+      <section id="guia" class="workspace-panel guide-panel">
+        <div class="panel-heading"><div><h2>Primeiros passos</h2><span class="subtle">Siga esta ordem para configurar uma comunicacao local com seguranca.</span></div></div>
+        <ol class="guide-steps">
+          <li><strong>Inicie o daemon.</strong><span>Ele precisa estar ativo neste dispositivo para que a URL local responda.</span></li>
+          <li><strong>Confira a conexao.</strong><span>Use a URL local exibida acima. O endereco padrao e <code>http://127.0.0.1:17345</code>.</span></li>
+          <li><strong>Registre este aplicativo.</strong><span>Em Integracao, escolha um nome e use Registrar app. O sistema devolve um App ID para este dispositivo.</span></li>
+          <li><strong>Gere o token aqui.</strong><span>Selecione apenas os escopos necessarios e use Criar token. Nao procure esse token fora do PeerComms: ele e emitido localmente, uma vez, e fica salvo nesta tela.</span></li>
+          <li><strong>Troque identificadores publicos.</strong><span>Carregue sua Identidade, copie o peer ID e confirme o peer ID da outra pessoa por um canal confiavel antes de enviar a solicitacao.</span></li>
+          <li><strong>Envie e acompanhe.</strong><span>Depois que o contato for aceito, preencha os dois peer IDs em Mensagens e conecte Eventos para ver entregas, notificacoes e estado da rede.</span></li>
+        </ol>
+        <div class="guide-note"><strong>Para integrar outro programa:</strong><span>registre um App ID separado, gere um token proprio e envie-o como <code>Authorization: Bearer ...</code>. Nunca compartilhe ou publique esse token.</span></div>
       </section>
 
       <div class="dashboard-grid">
@@ -292,4 +349,5 @@ function showSystemNotification(notification: JsonRecord): void {
     </main>
   </div>
   <div v-if="toast" class="toast" role="status" aria-live="polite">{{ toast }}</div>
+  <Teleport to="body"><div v-if="helpTooltip.visible" id="global-help-tooltip" class="global-help-tooltip" :style="helpTooltipStyle" role="tooltip">{{ helpTooltip.text }}</div></Teleport>
 </template>

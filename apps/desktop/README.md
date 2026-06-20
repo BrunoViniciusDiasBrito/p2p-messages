@@ -18,3 +18,7 @@ pnpm --filter @peercomms/desktop tauri dev
 ```
 
 The Vite preview serves `http://127.0.0.1:17400` by default.
+
+## User guide
+
+The complete onboarding, token, contact, messaging, and local-integration guide is available in [the user manual](../../docs/user-guide.md).
