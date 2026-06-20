@@ -145,6 +145,7 @@ export class LocalApiHttpHandler {
   }
 
   private isLoopbackOrigin(origin: string): boolean {
+    if (origin === 'tauri://localhost' || origin === 'http://tauri.localhost') return true;
     try {
       return this.isLoopback(new URL(origin).hostname);
     } catch {

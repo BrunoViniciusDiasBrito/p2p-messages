@@ -31,15 +31,15 @@ Progress is tracked by completed slices and remaining phases; no aggregate perce
 - Broader malformed direct-message envelope contract tests for protocol version, type, peer IDs, timestamps, nonce, payload, signature, and unexpected metadata.
 - SDK local API contract tests for documented URLs, bearer-token behavior, JSON request bodies, group message endpoint coverage, and typed API errors.
 - OpenAPI/SDK verification command that compares documented local API operations with the SDK's actual request paths.
-- Initial static desktop preview for identity, contacts, direct messages, integration tokens, and SSE events against the local API.
+- Vue + Vite desktop workspace and Tauri 2 native shell source for identity, contacts, direct messages, integration tokens, and SSE events.
+- Daemon composition for persistent SQLite storage, encrypted WebCrypto vault/key store, scoped-token hashing, and fixed-window per-app rate limiting.
+- libp2p adapter source with Noise encryption, Yamux streams, mDNS, optional DHT/bootstrap/relay configuration, and runtime connection events.
 
 ## Remaining major work
 
-- Production composition for encrypted key storage with OS keystore/passphrase unlock flow, backup/rotation UX, and libsodium/libp2p/OpenMLS hardening.
-- Runtime composition for encrypted key storage with an OS keystore/passphrase unlock flow, plus a packaging/fallback decision for runtimes without `node:sqlite`.
-- libp2p adapter with mDNS, DHT/Kademlia, secure transport, optional relay support, and real local node integration tests.
+- OS keystore/passphrase onboarding, backup/rotation UX, and a packaging/fallback decision for runtimes without `node:sqlite`.
+- libp2p daemon wiring, persistent peer reachability projections, and a stable socket-level integration test.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
 - Full daemon composition that wires concrete repositories, crypto, notifications, P2P lifecycle, and direct-message delivery adapters together.
 - SDK generation pipeline from OpenAPI; the handwritten SDK is contract-verified but not yet generated.
-- Tauri 2 + Vue migration for the static desktop preview.
-- Notifications UI/desktop adapter wiring, E2E tests, and hardening pass.
+- Native Tauri build/package verification, notifications UI/desktop adapter wiring, E2E tests, and hardening pass.

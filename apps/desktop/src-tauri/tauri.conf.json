@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "PeerComms",
+  "version": "0.1.0",
+  "identifier": "com.peercomms.desktop",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://127.0.0.1:17400",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "PeerComms",
+        "width": 1180,
+        "height": 780,
+        "minWidth": 860,
+        "minHeight": 620
+      }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": { "active": false }
+}

@@ -21,8 +21,11 @@
 }
 
 html,
-body {
+body,
+#app {
+  height: 100%;
   min-height: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -56,6 +59,20 @@ button:hover {
   color: var(--accent-strong);
 }
 
+.conversation-row {
+  display: grid;
+  width: 100%;
+  min-height: 58px;
+  gap: 4px;
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.conversation-row span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .primary-button {
   border-color: var(--accent);
   background: var(--accent);
@@ -70,14 +87,20 @@ button:hover {
 .app-shell {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow-y: auto;
   padding: 20px 16px;
   background: var(--sidebar);
   color: #f5f7f8;
@@ -136,7 +159,57 @@ button:hover {
   display: grid;
   gap: 16px;
   align-content: start;
+  height: 100dvh;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 18px;
+  scroll-behavior: smooth;
+}
+
+.sidebar,
+.workspace,
+.scroll-region,
+.json-output,
+.event-feed {
+  scrollbar-color: #8194a0 #edf1f4;
+  scrollbar-width: thin;
+}
+
+.sidebar::-webkit-scrollbar,
+.workspace::-webkit-scrollbar,
+.scroll-region::-webkit-scrollbar,
+.json-output::-webkit-scrollbar,
+.event-feed::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.workspace::-webkit-scrollbar-track,
+.scroll-region::-webkit-scrollbar-track,
+.json-output::-webkit-scrollbar-track,
+.event-feed::-webkit-scrollbar-track {
+  background: #edf1f4;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.workspace::-webkit-scrollbar-thumb,
+.scroll-region::-webkit-scrollbar-thumb,
+.json-output::-webkit-scrollbar-thumb,
+.event-feed::-webkit-scrollbar-thumb {
+  border: 2px solid #edf1f4;
+  border-radius: 6px;
+  background: #8194a0;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #142027;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  border-color: #142027;
+  background: #5f7480;
 }
 
 .topbar,
@@ -264,6 +337,68 @@ label span {
   font-weight: 600;
 }
 
+.field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.field-help {
+  position: relative;
+  display: inline-grid;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  place-items: center;
+  border: 1px solid #9aaab5;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #52616b;
+  cursor: help;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+}
+
+.field-help::after {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  width: min(260px, 65vw);
+  transform: translateX(-50%);
+  border: 1px solid #32414a;
+  border-radius: 6px;
+  background: #18252d;
+  box-shadow: 0 8px 20px rgba(23, 32, 38, 0.2);
+  color: #f4f8fa;
+  content: attr(data-tooltip);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  opacity: 0;
+  padding: 8px 10px;
+  pointer-events: none;
+  text-align: left;
+  transition: opacity 120ms ease;
+  visibility: hidden;
+}
+
+.field-help:hover::after,
+.field-help:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.field-help:focus-visible {
+  outline: 2px solid rgba(8, 127, 140, 0.35);
+  outline-offset: 2px;
+}
+
 input,
 textarea {
   width: 100%;
@@ -291,11 +426,51 @@ textarea:focus {
   gap: 10px;
 }
 
+.scope-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 9px 10px 10px;
+}
+
+.scope-field legend {
+  padding: 0 3px;
+}
+
+.scope-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.scope-option input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.scope-option span {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+}
+
 .item-list {
   display: grid;
   gap: 8px;
   align-content: start;
   min-height: 48px;
+}
+
+.scroll-region {
+  max-height: 400px;
+  overflow: auto;
+  padding-right: 3px;
 }
 
 .list-item {
@@ -363,6 +538,11 @@ textarea:focus {
   padding: 8px 10px;
 }
 
+.event-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .event-row time {
   color: var(--muted);
   font-size: 12px;
@@ -377,7 +557,7 @@ textarea:focus {
   position: fixed;
   right: 18px;
   bottom: 18px;
-  display: none;
+  display: block;
   max-width: min(420px, calc(100vw - 36px));
   border: 1px solid var(--line-strong);
   border-radius: 6px;
@@ -391,12 +571,31 @@ textarea:focus {
 }
 
 @media (max-width: 980px) {
+  html,
+  body,
+  #app {
+    height: auto;
+    overflow: visible;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
   }
 
   .sidebar {
+    position: sticky;
+    z-index: 10;
+    height: auto;
     min-height: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .workspace {
+    height: auto;
+    overflow: visible;
   }
 
   .nav-list {
@@ -416,6 +615,13 @@ textarea:focus {
 }
 
 @media (max-width: 620px) {
+  html,
+  body,
+  #app {
+    height: auto;
+    overflow: visible;
+  }
+
   .workspace {
     padding: 12px;
   }

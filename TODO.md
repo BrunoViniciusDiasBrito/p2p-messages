@@ -4,16 +4,15 @@ Progress is tracked by the phase checklist below; an aggregate percentage would 
 
 ## Phase 3
 
-- Compose the encrypted vault/key store with an OS keystore/passphrase unlock flow in the daemon for private key references and shared secrets.
+- Add OS-keystore/passphrase onboarding, backup, and key-rotation flow around the daemon's persistent encrypted vault.
 
 ## Phase 4
 
-- Add libp2p adapter with secure transport, mDNS, optional DHT/bootstrap, optional relays, and protocol streams.
-- Expand network status and peer reachability projections from real runtime events.
+- Integrate the libp2p adapter into the daemon, complete its socket-level integration test, and persist network reachability projections from runtime events.
 
 ## Phase 5+
 
 - Implement concrete MLS/OpenMLS adapter and encrypted group-message send/receive flow.
-- Add local REST/SSE API with scoped tokens and rate limits.
-- Generate SDK from `packages/protocol/openapi/local-api.v1.yaml` and keep contract tests aligned with the local API adapter.
-- Migrate the static desktop preview to Tauri 2 + Vue and wire notification publishers to daemon/UI adapters.
+- Complete local API provisioning hardening and connect notification publishers to daemon/SSE/UI adapters.
+- Generate the SDK from `packages/protocol/openapi/local-api.v1.yaml`; the handwritten SDK is verified but still source-maintained.
+- Run the Tauri native build/package path and add desktop notification and end-to-end coverage.

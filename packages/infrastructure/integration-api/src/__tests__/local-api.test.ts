@@ -46,6 +46,16 @@ describe('LocalApiHttpHandler', () => {
     expect(response.headers.get('access-control-allow-origin')).toBe('http://127.0.0.1:17400');
   });
 
+  it('allows the packaged Tauri webview origin', async () => {
+    const handler = new LocalApiHttpHandler(useCases);
+    const response = await handler.handle(new Request('http://127.0.0.1:17345/v1/identity/public', {
+      headers: { origin: 'tauri://localhost' }
+    }));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('access-control-allow-origin')).toBe('tauri://localhost');
+  });
+
   it('injects bearer token into external direct message use case', async () => {
     const handler = new LocalApiHttpHandler(useCases);
     const response = await handler.handle(new Request('http://127.0.0.1:17345/v1/messages/direct', {

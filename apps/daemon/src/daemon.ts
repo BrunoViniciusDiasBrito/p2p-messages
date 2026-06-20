@@ -17,6 +17,11 @@ export interface DaemonMaintenanceTask {
   run(): Promise<void>;
 }
 
+export interface DaemonStartupTask {
+  readonly name: string;
+  run(): Promise<void>;
+}
+
 export interface DaemonTimerPort {
   setInterval(callback: () => void, delayMs: number): unknown;
   clearInterval(handle: unknown): void;
@@ -28,6 +33,7 @@ export interface PeerCommsDaemonOptions {
   readonly migrations?: SqliteMigrationRunner;
   readonly server: LoopbackServerPort;
   readonly resources?: readonly DaemonResourcePort[];
+  readonly startupTasks?: readonly DaemonStartupTask[];
   readonly maintenanceTasks?: readonly DaemonMaintenanceTask[];
   readonly onMaintenanceError?: (input: { task: string; error: unknown }) => void;
   readonly timer?: DaemonTimerPort;
@@ -49,8 +55,10 @@ export class PeerCommsDaemon {
     if (this.runningUrl) return { url: this.runningUrl };
     if (this.resourcesClosed) throw new Error('A daemon with closed resources cannot be restarted; create a new daemon instance');
     try {
+      validateStartupTasks(this.options.startupTasks ?? []);
       validateMaintenanceTasks(this.options.maintenanceTasks ?? []);
       if (this.options.migrations) await this.options.migrations.run();
+      for (const task of this.options.startupTasks ?? []) await task.run();
       const started = await this.options.server.listen({ host: '127.0.0.1', port: this.options.port, handler: (request) => this.options.api.handle(request) });
       this.runningUrl = started.url;
       this.startMaintenance();
@@ -114,6 +122,15 @@ export class PeerCommsDaemon {
       if (error && !firstError) firstError = error;
     }
     return firstError;
+  }
+}
+
+function validateStartupTasks(tasks: readonly DaemonStartupTask[]): void {
+  const names = new Set<string>();
+  for (const task of tasks) {
+    if (!task.name.trim()) throw new Error('Daemon startup task names cannot be empty');
+    if (names.has(task.name)) throw new Error(`Duplicate daemon startup task "${task.name}"`);
+    names.add(task.name);
   }
 }
 
