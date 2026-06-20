@@ -13,7 +13,7 @@
     "smoke:sqlite": "pnpm --filter @peercomms/daemon smoke:sqlite",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
-    "verify:openapi": "pnpm --filter @peercomms/protocol verify:openapi"
+    "verify:openapi": "pnpm --filter @peercomms/sdk generate && pnpm --filter @peercomms/protocol verify:openapi"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

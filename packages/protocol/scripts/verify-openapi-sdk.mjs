@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 
 const openApiUrl = new URL('../openapi/local-api.v1.yaml', import.meta.url);
-const sdkSourceUrl = new URL('../../sdk/src/index.ts', import.meta.url);
+const sdkSourceUrl = new URL('../../sdk/src/generated/local-api.ts', import.meta.url);
 const openApi = await readFile(openApiUrl, 'utf8');
 const sdkSource = await readFile(sdkSourceUrl, 'utf8');
 
@@ -38,13 +38,17 @@ function readOpenApiOperations(document) {
 
 function readSdkOperations(source) {
   const operations = new Set();
-  for (const match of source.matchAll(/this\.(get|post)\(\s*(['`])([^'`]+)\2/g)) {
-    operations.add(toOperation(match[1], match[3]));
+  let path = null;
+  for (const line of source.split(/\r?\n/)) {
+    const pathMatch = line.match(/^\s+"(\/v1\/[^"{]+(?:\{[^}]+\}[^"{]*)*)":\s*\{$/);
+    if (pathMatch) {
+      path = pathMatch[1];
+      continue;
+    }
+    const methodMatch = line.match(/^\s{8}(get|post):\s*\{$/i);
+    if (path && methodMatch) operations.add(toOperation(methodMatch[1], path));
   }
-  for (const match of source.matchAll(/new EventSource\(`\$\{this\.options\.baseUrl\}([^`]+)`\)/g)) {
-    operations.add(toOperation('get', match[1]));
-  }
-  if (operations.size === 0) throw new Error('No local API operations were found in the SDK source');
+  if (operations.size === 0) throw new Error('No local API operations were found in the generated SDK source');
   return operations;
 }
 

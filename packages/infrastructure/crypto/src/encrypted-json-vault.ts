@@ -34,6 +34,7 @@ export interface EncryptedVaultStoragePort {
   readRecord(key: string): Promise<EncryptedVaultRecord | null>;
   writeRecord(key: string, record: EncryptedVaultRecord): Promise<void>;
   deleteRecord(key: string): Promise<void>;
+  listKeys(): Promise<readonly string[]>;
 }
 
 export class InMemoryEncryptedVaultStorage implements EncryptedVaultStoragePort {
@@ -41,6 +42,13 @@ export class InMemoryEncryptedVaultStorage implements EncryptedVaultStoragePort 
   async readRecord(key: string): Promise<EncryptedVaultRecord | null> { return this.rows.get(key) ?? null; }
   async writeRecord(key: string, record: EncryptedVaultRecord): Promise<void> { this.rows.set(key, record); }
   async deleteRecord(key: string): Promise<void> { this.rows.delete(key); }
+  async listKeys(): Promise<readonly string[]> { return [...this.rows.keys()].sort(); }
+}
+
+export interface EncryptedVaultBackup {
+  readonly format: 'peercomms.encrypted-vault.v1';
+  readonly exportedAt: string;
+  readonly records: readonly { readonly key: string; readonly record: EncryptedVaultRecord }[];
 }
 
 export class WebCryptoEncryptedJsonVault {
@@ -82,6 +90,33 @@ export class WebCryptoEncryptedJsonVault {
 
   async delete(key: string): Promise<void> {
     await this.storage.deleteRecord(key);
+  }
+
+  async exportEncryptedBackup(now = new Date()): Promise<EncryptedVaultBackup> {
+    const records: Array<{ key: string; record: EncryptedVaultRecord }> = [];
+    for (const key of await this.storage.listKeys()) {
+      const record = await this.storage.readRecord(key);
+      if (record) records.push({ key, record });
+    }
+    return { format: 'peercomms.encrypted-vault.v1', exportedAt: now.toISOString(), records };
+  }
+
+  async restoreEncryptedBackup(backup: EncryptedVaultBackup, options: { overwrite?: boolean } = {}): Promise<void> {
+    if (backup.format !== 'peercomms.encrypted-vault.v1') throw new Error('Unsupported encrypted vault backup');
+    for (const { key, record } of backup.records) {
+      if (!options.overwrite && await this.storage.readRecord(key)) continue;
+      await this.storage.writeRecord(key, record);
+    }
+  }
+
+  async rotatePassphrase(currentPassphrase: string, nextPassphrase: string, now = new Date()): Promise<void> {
+    if (!nextPassphrase) throw new Error('Vault passphrase cannot be empty');
+    const values: Array<{ key: string; value: unknown }> = [];
+    for (const key of await this.storage.listKeys()) {
+      const value = await this.getJson<unknown>(key, currentPassphrase);
+      if (value !== null) values.push({ key, value });
+    }
+    for (const { key, value } of values) await this.putJson(key, value, nextPassphrase, now);
   }
 
   private get iterations(): number {

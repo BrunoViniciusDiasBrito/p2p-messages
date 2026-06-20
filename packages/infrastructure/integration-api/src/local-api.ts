@@ -12,6 +12,9 @@ export interface LocalApiUseCases {
   readonly listConversations: { execute(): Promise<Result<unknown>> };
   readonly listMessages: { execute(input: { conversationId: string }): Promise<Result<unknown>> };
   readonly sendMessageFromExternalApp: { execute(input: { token: string; fromPeerId: string; toPeerId: string; text: string }): Promise<Result<unknown>> };
+  readonly listNotifications?: { execute(input?: { limit?: number; unreadOnly?: boolean }): Promise<Result<unknown>> };
+  readonly markNotificationAsRead?: { execute(input: { notificationId: string }): Promise<Result<unknown>> };
+  readonly listNetworkPeers?: { execute(input?: { limit?: number }): Promise<Result<unknown>> };
   readonly createGroup?: { execute(input: { ownerPeerId: string; name: string }): Promise<Result<unknown>> };
   readonly invitePeerToGroup?: { execute(input: { groupId: string; inviterPeerId: string; inviteePeerId: string }): Promise<Result<unknown>> };
   readonly acceptGroupInvitation?: { execute(input: { invitationId: string; welcomePayload: string }): Promise<Result<unknown>> };
@@ -76,6 +79,13 @@ export class LocalApiHttpHandler {
       if (route === 'POST /v1/contacts/requests') return this.fromResult(await this.useCases.sendContactRequest.execute(await this.body<{ localPeerId: string; remotePeerId: string; message?: string }>(request)), request);
       if (route === 'GET /v1/conversations') return this.fromResult(await this.useCases.listConversations.execute(), request);
       if (route === 'POST /v1/messages/direct') return this.fromResult(await this.useCases.sendMessageFromExternalApp.execute({ ...(await this.body<{ fromPeerId: string; toPeerId: string; text: string }>(request)), token: this.bearerToken(request) }), request);
+      if (route === 'GET /v1/notifications' && this.useCases.listNotifications) return this.fromResult(await this.useCases.listNotifications.execute({
+        ...(url.searchParams.has('limit') ? { limit: Number(url.searchParams.get('limit')) } : {}),
+        ...(url.searchParams.get('unread') === 'true' ? { unreadOnly: true } : {})
+      }), request);
+      if (route === 'GET /v1/network/peers' && this.useCases.listNetworkPeers) return this.fromResult(await this.useCases.listNetworkPeers.execute({
+        ...(url.searchParams.has('limit') ? { limit: Number(url.searchParams.get('limit')) } : {})
+      }), request);
       if (route === 'POST /v1/groups' && this.useCases.createGroup) return this.fromResult(await this.useCases.createGroup.execute(await this.body<{ ownerPeerId: string; name: string }>(request)), request);
       if (route === 'POST /v1/events/webhooks') return this.fromResult(await this.useCases.subscribeExternalAppToEvents.execute({ ...(await this.body<{ webhookUrl: string; eventTypes: readonly string[] }>(request)), token: this.bearerToken(request) }), request);
       if (route === 'GET /v1/events/stream') return new Response(this.events.openStream(), { status: 200, headers: { ...this.corsHeaders(request), 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' } });
@@ -89,6 +99,9 @@ export class LocalApiHttpHandler {
 
       const messagesMatch = url.pathname.match(/^\/v1\/conversations\/([^/]+)\/messages$/);
       if (request.method === 'GET' && messagesMatch?.[1]) return this.fromResult(await this.useCases.listMessages.execute({ conversationId: decodeURIComponent(messagesMatch[1]) }), request);
+
+      const notificationReadMatch = url.pathname.match(/^\/v1\/notifications\/([^/]+)\/read$/);
+      if (request.method === 'POST' && notificationReadMatch?.[1] && this.useCases.markNotificationAsRead) return this.fromResult(await this.useCases.markNotificationAsRead.execute({ notificationId: decodeURIComponent(notificationReadMatch[1]) }), request);
 
       const groupInviteMatch = url.pathname.match(/^\/v1\/groups\/([^/]+)\/invitations$/);
       if (request.method === 'POST' && groupInviteMatch?.[1] && this.useCases.invitePeerToGroup) return this.fromResult(await this.useCases.invitePeerToGroup.execute({ ...(await this.body<{ inviterPeerId: string; inviteePeerId: string }>(request)), groupId: decodeURIComponent(groupInviteMatch[1]) }), request);

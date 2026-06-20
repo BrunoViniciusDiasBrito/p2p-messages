@@ -34,12 +34,17 @@ Progress is tracked by completed slices and remaining phases; no aggregate perce
 - Vue + Vite desktop workspace and Tauri 2 native shell source for identity, contacts, direct messages, integration tokens, and SSE events.
 - Daemon composition for persistent SQLite storage, encrypted WebCrypto vault/key store, scoped-token hashing, and fixed-window per-app rate limiting.
 - libp2p adapter source with Noise encryption, Yamux streams, mDNS, optional DHT/bootstrap/relay configuration, and runtime connection events.
+- Daemon-owned libp2p lifecycle, inbound direct-envelope routing, scheduled outbox delivery retry, and SQLite reachability projection surfaced through local API/SSE.
+- Persistent vault lifecycle operations: encrypted export/restore, passphrase rotation, cache lock, and persisted remote verification-key references.
+- Fixed-window local rate limiting per external app and action.
+- Notification projection from domain events into SQLite, local SSE, loopback webhooks, and the Vue desktop notification center; browser/webview system notifications are requested from the explicit event-connect action.
+- OpenAPI-generated SDK types via `openapi-typescript`, with generated-path verification against the API document.
+- Desktop layout improvements: fixed sidebar, independent scroll regions with custom scrollbars, field-level help tooltips, notification center, and network-reachability view.
 
 ## Remaining major work
 
-- OS keystore/passphrase onboarding, backup/rotation UX, and a packaging/fallback decision for runtimes without `node:sqlite`.
-- libp2p daemon wiring, persistent peer reachability projections, and a stable socket-level integration test.
+- OS keystore/passphrase onboarding UX and a packaging/fallback decision for runtimes without `node:sqlite`.
+- Stable libp2p socket-level integration test and application-ID-to-transport-ID trust binding.
 - Concrete group-message encryption and MLS/OpenMLS adapter implementation.
-- Full daemon composition that wires concrete repositories, crypto, notifications, P2P lifecycle, and direct-message delivery adapters together.
-- SDK generation pipeline from OpenAPI; the handwritten SDK is contract-verified but not yet generated.
-- Native Tauri build/package verification, notifications UI/desktop adapter wiring, E2E tests, and hardening pass.
+- Authenticated local API read scopes, webhook retry persistence, and API-level rate limits beyond direct-message sends.
+- Native Tauri build/package verification, full native notification adapter, E2E tests, and hardening pass.

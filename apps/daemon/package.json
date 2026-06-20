@@ -17,6 +17,7 @@
     "@peercomms/crypto": "workspace:*",
     "@peercomms/domain": "workspace:*",
     "@peercomms/integration-api": "workspace:*",
+    "@peercomms/p2p-libp2p": "workspace:*",
     "@peercomms/storage-sqlite": "workspace:*"
   }
 }

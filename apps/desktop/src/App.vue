@@ -30,6 +30,8 @@ const settings = reactive({
 const identity = ref<unknown>({});
 const contacts = ref<JsonRecord[]>([]);
 const conversations = ref<JsonRecord[]>([]);
+const notifications = ref<JsonRecord[]>([]);
+const networkPeers = ref<JsonRecord[]>([]);
 const messages = ref<unknown>({});
 const eventFeed = ref<Array<{ type: string; data: unknown; at: string }>>([]);
 const status = reactive<{ kind: StatusKind; text: string }>({ kind: 'idle', text: 'API inativa' });
@@ -61,7 +63,7 @@ function saveSettings(): void {
 
 async function refreshAll(): Promise<void> {
   await runTask('Atualizando dados', async () => {
-    await Promise.allSettled([loadIdentity(), loadContacts(), loadConversations()]);
+    await Promise.allSettled([loadIdentity(), loadContacts(), loadConversations(), loadNotifications(), loadNetworkPeers()]);
   });
 }
 
@@ -75,6 +77,21 @@ async function loadContacts(): Promise<void> {
 
 async function loadConversations(): Promise<void> {
   conversations.value = collection(await request('/v1/conversations'));
+}
+
+async function loadNotifications(): Promise<void> {
+  notifications.value = collection(await request('/v1/notifications?limit=50'));
+}
+
+async function loadNetworkPeers(): Promise<void> {
+  networkPeers.value = collection(await request('/v1/network/peers?limit=50'));
+}
+
+async function markNotificationRead(notificationId: string): Promise<void> {
+  await runTask('Marcando notificacao como lida', async () => {
+    await request(`/v1/notifications/${encodeURIComponent(notificationId)}/read`, { method: 'POST' });
+    await loadNotifications();
+  });
 }
 
 async function loadMessages(conversationId: string): Promise<void> {
@@ -122,6 +139,7 @@ async function sendDirectMessage(): Promise<void> {
 
 function connectEvents(): void {
   eventSource?.close();
+  if ('Notification' in window && Notification.permission === 'default') void Notification.requestPermission();
   eventSource = new EventSource(`${settings.baseUrl}/v1/events/stream`);
   eventSource.onopen = () => setStatus('ok', 'Eventos conectados');
   eventSource.onerror = () => setStatus('warn', 'Reconectando eventos');
@@ -129,6 +147,12 @@ function connectEvents(): void {
     eventSource.addEventListener(eventName, (event) => {
       const data = safeJson((event as MessageEvent<string>).data);
       eventFeed.value.unshift({ type: eventName, data, at: new Date().toLocaleTimeString() });
+      if (eventName === 'notification.created' && data && typeof data === 'object') {
+        const notification = data as JsonRecord;
+        notifications.value.unshift(notification);
+        showSystemNotification(notification);
+      }
+      if (eventName === 'peer.connected' || eventName === 'peer.disconnected') void loadNetworkPeers();
     });
   }
   eventFeed.value.unshift({ type: 'stream.open', data: { baseUrl: settings.baseUrl }, at: new Date().toLocaleTimeString() });
@@ -188,6 +212,13 @@ function notify(message: string): void {
   if (toastTimer) window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => { toast.value = ''; }, 3_200);
 }
+
+function showSystemNotification(notification: JsonRecord): void {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  new Notification(String(notification.title ?? 'PeerComms'), {
+    body: typeof notification.body === 'string' ? notification.body : String(notification.type ?? 'Novo evento')
+  });
+}
 </script>
 
 <template>
@@ -201,6 +232,8 @@ function notify(message: string): void {
         <a class="nav-item is-active" href="#identidade">Identidade</a>
         <a class="nav-item" href="#contatos">Contatos</a>
         <a class="nav-item" href="#mensagens">Mensagens</a>
+        <a class="nav-item" href="#notificacoes">Notificacoes</a>
+        <a class="nav-item" href="#rede">Rede</a>
         <a class="nav-item" href="#eventos">Eventos</a>
         <a class="nav-item" href="#conexao">Conexao</a>
       </nav>
@@ -240,6 +273,18 @@ function notify(message: string): void {
         <section id="mensagens" class="workspace-panel message-panel">
           <div class="panel-heading"><h2>Mensagens</h2><button type="button" @click="loadConversations">Carregar</button></div>
           <div class="split-panel"><div class="item-list scroll-region"><div v-if="conversations.length === 0" class="list-item">Nenhuma conversa</div><button v-for="conversation in conversations" :key="label(conversation, ['id'])" class="conversation-row" type="button" @click="loadMessages(label(conversation, ['id']))"><strong>{{ label(conversation, ['peerId', 'groupId', 'id']) }}</strong><span>{{ label(conversation, ['updatedAt', 'type']) }}</span></button></div><div class="message-compose"><form class="stack-form" @submit.prevent="sendDirectMessage"><label><span class="field-label">Peer remetente <button class="field-help" type="button" aria-label="Ajuda sobre peer remetente" data-tooltip="Seu peer ID publico. Deve ser o mesmo identificador da sua identidade local.">i</button></span><input v-model="messageForm.fromPeerId" placeholder="pc_..." required></label><label><span class="field-label">Peer destinatario <button class="field-help" type="button" aria-label="Ajuda sobre peer destinatario" data-tooltip="Peer ID de um contato aceito. A mensagem e criptografada antes de entrar na fila de entrega.">i</button></span><input v-model="messageForm.toPeerId" placeholder="pc_..." required></label><label><span class="field-label">Mensagem <button class="field-help" type="button" aria-label="Ajuda sobre mensagem direta" data-tooltip="Conteudo que sera criptografado localmente. O envio pode ficar na fila enquanto o contato estiver indisponivel.">i</button></span><textarea v-model="messageForm.text" rows="5" placeholder="Escreva uma mensagem direta" required></textarea></label><button class="primary-button" type="submit">Enfileirar mensagem</button></form><pre class="json-output">{{ pretty(messages) }}</pre></div></div>
+        </section>
+      </div>
+
+      <div class="content-grid">
+        <section id="notificacoes" class="workspace-panel">
+          <div class="panel-heading"><h2>Notificacoes</h2><button type="button" @click="loadNotifications">Carregar</button></div>
+          <div class="item-list scroll-region"><div v-if="notifications.length === 0" class="list-item">Nenhuma notificacao</div><div v-for="notification in notifications" :key="label(notification, ['id'])" class="list-item"><strong>{{ label(notification, ['title', 'type']) }}</strong><span>{{ label(notification, ['body', 'type']) }}</span><span>{{ label(notification, ['createdAt']) }}</span><button v-if="!notification.readAt" type="button" @click="markNotificationRead(label(notification, ['id']))">Marcar como lida</button></div></div>
+        </section>
+
+        <section id="rede" class="workspace-panel">
+          <div class="panel-heading"><h2>Alcance da rede</h2><button type="button" @click="loadNetworkPeers">Atualizar</button></div>
+          <div class="item-list scroll-region"><div v-if="networkPeers.length === 0" class="list-item">Nenhum peer de transporte observado</div><div v-for="peer in networkPeers" :key="label(peer, ['peerId'])" class="list-item"><strong>{{ label(peer, ['peerId']) }}</strong><span>{{ label(peer, ['reachability']) }}</span><span>{{ label(peer, ['lastSeenAt']) }}</span></div></div>
         </section>
       </div>
 

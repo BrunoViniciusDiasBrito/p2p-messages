@@ -6,6 +6,7 @@ export * from './messaging-repositories.js';
 export * from './group-repositories.js';
 export * from './integration-repositories.js';
 export * from './notification-repository.js';
+export * from './network-peer-projection.js';
 export * from './migrations.js';
 export * from './migration-loader.js';
 export * from './encrypted-vault-storage.js';

@@ -25,6 +25,7 @@ class Webhooks implements WebhookSubscriptionRepository {
   readonly rows: WebhookSubscription[] = [];
   async save(subscription: WebhookSubscription): Promise<void> { this.rows.push(subscription); }
   async listByAppId(appId: string): Promise<WebhookSubscription[]> { return this.rows.filter((row) => row.snapshot.appId === appId); }
+  async listAll(): Promise<WebhookSubscription[]> { return [...this.rows]; }
 }
 
 const hasher: ApiTokenHasher = { async hash(rawToken) { return `tokhash_${rawToken}`; } };

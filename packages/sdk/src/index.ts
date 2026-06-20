@@ -1,3 +1,9 @@
+import type { components, paths } from './generated/local-api.js';
+
+export type LocalApiComponents = components;
+export type LocalApiPaths = paths;
+export type LocalNotification = components['schemas']['Notification'];
+export type LocalNetworkPeer = components['schemas']['NetworkPeer'];
 export interface PeerCommsClientOptions { readonly baseUrl: string; readonly token?: string; }
 export interface RegisterAppInput { readonly name: string; }
 export interface CreateTokenInput { readonly appId: string; readonly scopes: readonly string[]; }
@@ -7,17 +13,7 @@ export interface CreateGroupInput { readonly ownerPeerId: string; readonly name:
 export interface InvitePeerToGroupInput { readonly inviterPeerId: string; readonly inviteePeerId: string; }
 export interface SendGroupMessageInput { readonly fromPeerId: string; readonly text: string; }
 export interface SubscribeWebhookInput { readonly webhookUrl: string; readonly eventTypes: readonly PeerCommsEventName[]; }
-export type PeerCommsEventName =
-  | 'contact.request.received'
-  | 'contact.request.approved'
-  | 'message.received'
-  | 'message.sent'
-  | 'message.failed'
-  | 'group.invitation.received'
-  | 'group.member.added'
-  | 'notification.created'
-  | 'peer.connected'
-  | 'peer.disconnected';
+export type PeerCommsEventName = components['schemas']['WebhookSubscriptionRequest']['eventTypes'][number];
 
 export class PeerCommsApiError extends Error {
   constructor(readonly status: number, message: string) {
@@ -51,6 +47,21 @@ export class PeerCommsClient {
 
   readonly messages = {
     sendDirect: (input: SendDirectMessageInput): Promise<{ messageId: string; envelopeId: string }> => this.post('/v1/messages/direct', input)
+  };
+
+  readonly notifications = {
+    list: (input: { limit?: number; unreadOnly?: boolean } = {}): Promise<LocalNotification[]> => {
+      const query = new URLSearchParams();
+      if (input.limit !== undefined) query.set('limit', String(input.limit));
+      if (input.unreadOnly) query.set('unread', 'true');
+      const suffix = query.size ? `?${query}` : '';
+      return this.get(`/v1/notifications${suffix}`);
+    },
+    markRead: (notificationId: string): Promise<unknown> => this.post(`/v1/notifications/${encodeURIComponent(notificationId)}/read`, {})
+  };
+
+  readonly network = {
+    peers: (limit?: number): Promise<LocalNetworkPeer[]> => this.get(`/v1/network/peers${limit ? `?limit=${encodeURIComponent(String(limit))}` : ''}`)
   };
 
   readonly groups = {

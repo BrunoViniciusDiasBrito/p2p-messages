@@ -13,6 +13,10 @@ interface VaultRecordRow extends SqliteRow {
   updated_at: string;
 }
 
+interface VaultKeyRow extends SqliteRow {
+  key: string;
+}
+
 const toRecord = (row: VaultRecordRow): EncryptedVaultRecord => ({
   version: 1,
   kdf: row.kdf as 'PBKDF2-SHA256',
@@ -54,5 +58,10 @@ export class SqliteEncryptedVaultStorage implements EncryptedVaultStoragePort {
 
   async deleteRecord(key: string): Promise<void> {
     await this.db.execute('DELETE FROM encrypted_vault_records WHERE key = ?', [key]);
+  }
+
+  async listKeys(): Promise<readonly string[]> {
+    const rows = await this.db.query<VaultKeyRow>('SELECT key FROM encrypted_vault_records ORDER BY key');
+    return rows.map((row) => row.key);
   }
 }

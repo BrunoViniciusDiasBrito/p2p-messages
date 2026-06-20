@@ -1,4 +1,4 @@
-import { Notification, NotificationChannel, NotificationType, Result, err, ok } from '@peercomms/domain';
+import { Notification, NotificationChannel, NotificationProps, NotificationType, Result, err, ok } from '@peercomms/domain';
 import { DomainEventBus } from '../ports/event-bus.js';
 import { IdGenerator } from '../ports/id-generator.js';
 import { LocalNotificationPublisher, NotificationEventSubscriptionPort, NotificationRepository } from '../ports/notification-ports.js';
@@ -32,6 +32,18 @@ export class MarkNotificationAsReadUseCase {
     notification.markRead(new Date());
     await this.notifications.save(notification);
     return ok(undefined);
+  }
+}
+
+export class ListNotificationsUseCase {
+  constructor(private readonly notifications: NotificationRepository) {}
+
+  async execute(input: { limit?: number; unreadOnly?: boolean } = {}): Promise<Result<readonly NotificationProps[]>> {
+    const limit = Math.min(Math.max(input.limit ?? 50, 1), 200);
+    const notifications = input.unreadOnly
+      ? await this.notifications.listUnread()
+      : await this.notifications.listAll(limit);
+    return ok(notifications.slice(0, limit).map((notification) => notification.snapshot));
   }
 }
 

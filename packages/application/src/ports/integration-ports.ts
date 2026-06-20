@@ -15,6 +15,7 @@ export interface ApiTokenRepository {
 export interface WebhookSubscriptionRepository {
   save(subscription: WebhookSubscription): Promise<void>;
   listByAppId(appId: string): Promise<WebhookSubscription[]>;
+  listAll(): Promise<WebhookSubscription[]>;
 }
 
 export interface ApiTokenSecretGenerator {

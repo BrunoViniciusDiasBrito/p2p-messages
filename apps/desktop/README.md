@@ -4,9 +4,11 @@ Tauri 2 + Vue local desktop client for the PeerComms daemon API.
 
 ## Current state
 
-- Vue workspace for identity, contacts, direct messages, integration tokens, and SSE events.
+- Vue workspace for identity, contacts, direct messages, integration tokens, notifications, network reachability, and SSE events.
 - Talks to the loopback API through a configurable base URL and bearer token.
-- Vite development server plus a Tauri 2 Rust shell in `src-tauri`.
+- Vite development server plus a Tauri 2 Rust shell in `src-tauri`; bundle configuration is enabled for native packaging validation.
+- The sidebar remains fixed on desktop. Large lists and event output have independent styled scrollbars, and field help is available from the information controls.
+- Connecting the event stream requests local notification permission; events then appear in-app and can be surfaced by the webview runtime.
 
 ## Run
 

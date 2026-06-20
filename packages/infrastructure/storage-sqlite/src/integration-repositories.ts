@@ -117,4 +117,9 @@ export class SqliteWebhookSubscriptionRepository implements WebhookSubscriptionR
     const rows = await this.db.query<WebhookSubscriptionRow>('SELECT id, app_id, url, event_types, created_at FROM webhook_subscriptions WHERE app_id = ? ORDER BY created_at DESC', [appId]);
     return rows.map(mapWebhook);
   }
+
+  async listAll(): Promise<WebhookSubscription[]> {
+    const rows = await this.db.query<WebhookSubscriptionRow>('SELECT id, app_id, url, event_types, created_at FROM webhook_subscriptions ORDER BY created_at DESC');
+    return rows.map(mapWebhook);
+  }
 }

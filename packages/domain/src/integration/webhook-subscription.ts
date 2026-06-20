@@ -25,7 +25,13 @@ export class WebhookSubscription {
   private constructor(props: WebhookSubscriptionProps) { this.props = props; }
 
   static create(props: WebhookSubscriptionProps): WebhookSubscription {
-    if (!props.url.startsWith('http://127.0.0.1') && !props.url.startsWith('http://localhost')) {
+    let url: URL;
+    try {
+      url = new URL(props.url);
+    } catch {
+      throw new DomainError('Local webhook URL must be valid', 'webhook.invalid_url');
+    }
+    if ((url.protocol !== 'http:' && url.protocol !== 'https:') || !['127.0.0.1', 'localhost', '[::1]', '::1'].includes(url.hostname)) {
       throw new DomainError('Local webhooks must target loopback URLs only', 'webhook.loopback_required');
     }
     if (props.eventTypes.length === 0) throw new DomainError('Webhook must subscribe to at least one event type', 'webhook.events_empty');

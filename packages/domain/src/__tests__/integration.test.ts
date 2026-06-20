@@ -20,5 +20,12 @@ describe('Integration domain', () => {
       eventTypes: ['message.received'],
       createdAt: new Date()
     })).toThrow('loopback');
+    expect(() => WebhookSubscription.create({
+      id: 'wh_2',
+      appId: 'app_1',
+      url: 'http://127.0.0.1.attacker.invalid/hook',
+      eventTypes: ['message.received'],
+      createdAt: new Date()
+    })).toThrow('loopback');
   });
 });

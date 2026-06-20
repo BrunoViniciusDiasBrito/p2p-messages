@@ -57,7 +57,14 @@ interface PersistedSharedSecret {
   readonly secret: string;
 }
 
+interface PersistedPublicIdentity {
+  readonly version: 1;
+  readonly peerId: string;
+  readonly publicKey: string;
+}
+
 const identityVaultKey = (peerId: string): string => `webcrypto.identity.${peerId}`;
+const publicIdentityVaultKey = (peerId: string): string => `webcrypto.public-identity.${peerId}`;
 const sharedSecretVaultKey = (leftPeerId: string, rightPeerId: string): string => `webcrypto.direct-secret.${pairKey(leftPeerId, rightPeerId)}`;
 
 const importVerificationKey = async (publicKey: string): Promise<CryptoKey> => {
@@ -100,7 +107,13 @@ export class InMemoryWebCryptoKeyStore implements WebCryptoKeyStore {
   }
 
   async registerPublicIdentity(input: { peerId: string; publicKey: string }): Promise<void> {
-    this.verificationPublicKeys.set(input.peerId, await importVerificationKey(input.publicKey));
+    const key = await importVerificationKey(input.publicKey);
+    await this.vault.putJson<PersistedPublicIdentity>(publicIdentityVaultKey(input.peerId), {
+      version: 1,
+      peerId: input.peerId,
+      publicKey: input.publicKey
+    }, this.passphrase);
+    this.verificationPublicKeys.set(input.peerId, key);
   }
 
   async registerSharedSecret(input: { leftPeerId: string; rightPeerId: string; secret: Uint8Array }): Promise<void> {
@@ -133,8 +146,20 @@ export class PersistentWebCryptoKeyStore implements WebCryptoKeyStore {
 
   constructor(
     private readonly vault: WebCryptoEncryptedJsonVault,
-    private readonly passphrase: string
+    private passphrase: string
   ) {}
+
+  lock(): void {
+    this.signingPrivateKeys.clear();
+    this.verificationPublicKeys.clear();
+    this.sharedSecrets.clear();
+  }
+
+  async rotatePassphrase(nextPassphrase: string): Promise<void> {
+    await this.vault.rotatePassphrase(this.passphrase, nextPassphrase);
+    this.passphrase = nextPassphrase;
+    this.lock();
+  }
 
   async createIdentity(): Promise<WebCryptoIdentityRecord> {
     const keyPair = await subtle.generateKey(
@@ -199,8 +224,13 @@ export class PersistentWebCryptoKeyStore implements WebCryptoKeyStore {
   async getVerificationKey(peerId: string): Promise<CryptoKey> {
     const cached = this.verificationPublicKeys.get(peerId);
     if (cached) return cached;
-    const persisted = await this.readPersistedIdentity(peerId);
-    const publicKey = await importVerificationKey(persisted.publicKey);
+    const local = await this.vault.getJson<PersistedIdentityKey>(identityVaultKey(peerId), this.passphrase);
+    const remote = local ? null : await this.vault.getJson<PersistedPublicIdentity>(publicIdentityVaultKey(peerId), this.passphrase);
+    const publicKeyValue = local?.publicKey ?? remote?.publicKey;
+    if (!publicKeyValue || (remote && (remote.version !== 1 || remote.peerId !== peerId))) {
+      throw new Error('Missing verification key for peer');
+    }
+    const publicKey = await importVerificationKey(publicKeyValue);
     this.verificationPublicKeys.set(peerId, publicKey);
     return publicKey;
   }

@@ -47,11 +47,25 @@ describe('WebCryptoDirectMessageCrypto', () => {
 
     const secondRunKeys = new PersistentWebCryptoKeyStore(vault, 'local passphrase');
     const secondRunCrypto = new WebCryptoDirectMessageCrypto(secondRunKeys);
+    await firstRunKeys.registerPublicIdentity({ peerId: bob.peerId, publicKey: bob.publicKey });
 
     await expect(secondRunCrypto.decryptDirect({ encryptedPayload: encrypted.encryptedPayload, nonce: encrypted.nonce, fromPeerId: alice.peerId, toPeerId: bob.peerId }))
       .resolves.toBe('persisted secret');
     await expect(secondRunCrypto.verifyEnvelopeSignature({ canonicalEnvelope, signature, fromPeerId: alice.peerId }))
       .resolves.toBe(true);
     expect(alice.privateKeyReference).toBe(`webcrypto-vault:p256:${alice.peerId}`);
+    await expect(secondRunKeys.getVerificationKey(bob.peerId)).resolves.toBeDefined();
+  });
+
+  it('locks cached keys and keeps access after a passphrase rotation', async () => {
+    const vault = new WebCryptoEncryptedJsonVault(new InMemoryEncryptedVaultStorage(), { iterations: 1_000 });
+    const keys = new PersistentWebCryptoKeyStore(vault, 'first passphrase');
+    const identity = await new WebCryptoIdentityKeyProvider(keys).generateIdentity();
+    const canonicalEnvelope = JSON.stringify({ hello: 'vault rotation' });
+    const signature = await new WebCryptoDirectMessageCrypto(keys).signEnvelope({ canonicalEnvelope, fromPeerId: identity.peerId });
+
+    keys.lock();
+    await keys.rotatePassphrase('next passphrase');
+    expect(await new WebCryptoDirectMessageCrypto(keys).verifyEnvelopeSignature({ canonicalEnvelope, signature, fromPeerId: identity.peerId })).toBe(true);
   });
 });

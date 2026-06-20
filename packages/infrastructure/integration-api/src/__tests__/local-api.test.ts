@@ -14,6 +14,9 @@ const useCases: LocalApiUseCases = {
   listConversations: { async execute() { return ok([]); } },
   listMessages: { async execute(input) { return ok({ conversationId: input.conversationId, messages: [] }); } },
   sendMessageFromExternalApp: { async execute(input) { return ok({ messageId: 'msg_1', envelopeId: `env_${input.toPeerId}` }); } },
+  listNotifications: { async execute(input) { return ok([{ id: 'ntf_1', unreadOnly: input?.unreadOnly ?? false }]); } },
+  markNotificationAsRead: { async execute(input) { return ok({ notificationId: input.notificationId }); } },
+  listNetworkPeers: { async execute() { return ok([{ peerId: 'transport:12D3', reachability: 'peer_reachable' }]); } },
   createGroup: { async execute() { return ok({ groupId: 'grp_1' }); } },
   invitePeerToGroup: { async execute(input) { return ok({ groupId: input.groupId, invitationId: 'ginv_1' }); } },
   acceptGroupInvitation: { async execute(input) { return ok({ invitationId: input.invitationId }); } },
@@ -65,5 +68,23 @@ describe('LocalApiHttpHandler', () => {
     }));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ messageId: 'msg_1', envelopeId: 'env_pc_targetpeer123456' });
+  });
+
+  it('lists and marks local notifications as read', async () => {
+    const handler = new LocalApiHttpHandler(useCases);
+    const listed = await handler.handle(new Request('http://127.0.0.1:17345/v1/notifications?unread=true&limit=10'));
+    expect(listed.status).toBe(200);
+    expect(await listed.json()).toEqual([{ id: 'ntf_1', unreadOnly: true }]);
+
+    const read = await handler.handle(new Request('http://127.0.0.1:17345/v1/notifications/ntf_1/read', { method: 'POST' }));
+    expect(read.status).toBe(200);
+    expect(await read.json()).toEqual({ notificationId: 'ntf_1' });
+  });
+
+  it('exposes the persistent network reachability projection', async () => {
+    const handler = new LocalApiHttpHandler(useCases);
+    const response = await handler.handle(new Request('http://127.0.0.1:17345/v1/network/peers'));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual([{ peerId: 'transport:12D3', reachability: 'peer_reachable' }]);
   });
 });

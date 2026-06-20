@@ -75,6 +75,29 @@ components:
       required: [subscriptionId]
       properties:
         subscriptionId: { type: string }
+    Notification:
+      type: object
+      required: [id, type, title, channels, createdAt]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        title: { type: string }
+        body: { type: string }
+        channels:
+          type: array
+          items: { type: string }
+        createdAt: { type: string, format: date-time }
+        readAt: { type: string, format: date-time }
+    NetworkPeer:
+      type: object
+      required: [peerId, reachability]
+      properties:
+        peerId: { type: string, description: Public peer id or an explicitly labelled transport peer id. }
+        reachability:
+          type: string
+          enum: [local_only, peer_reachable, peer_unreachable, queued_until_reachable]
+        lastSeenAt: { type: string, format: date-time }
+        metadata: { type: object, additionalProperties: true }
 paths:
   /v1/integrations/apps:
     post:
@@ -183,6 +206,51 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/SendDirectMessageResponse' }
+
+  /v1/notifications:
+    get:
+      summary: List persisted local notifications.
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 200 }
+        - in: query
+          name: unread
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Notifications ordered by newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Notification' }
+  /v1/notifications/{id}/read:
+    post:
+      summary: Mark a local notification as read.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Notification marked as read. }
+
+  /v1/network/peers:
+    get:
+      summary: List the persisted local transport reachability projection.
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500 }
+      responses:
+        '200':
+          description: Known peer reachability records.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/NetworkPeer' }
 
   /v1/groups:
     post:

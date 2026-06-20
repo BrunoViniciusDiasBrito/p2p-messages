@@ -27,4 +27,19 @@ describe('WebCryptoEncryptedJsonVault', () => {
     await vault.putJson('shared-secret', { secret: 'test-secret' }, 'right-passphrase');
     await expect(vault.getJson('shared-secret', 'wrong-passphrase')).rejects.toThrow();
   });
+
+  it('exports only encrypted records and rotates every persisted secret', async () => {
+    const storage = new InMemoryEncryptedVaultStorage();
+    const vault = new WebCryptoEncryptedJsonVault(storage, { iterations: 1_000 });
+    await vault.putJson('identity', { privateKey: 'not-plaintext' }, 'first passphrase');
+    await vault.putJson('secret', { value: 'shared' }, 'first passphrase');
+
+    const backup = await vault.exportEncryptedBackup(new Date('2026-06-20T00:00:00.000Z'));
+    expect(backup.records).toHaveLength(2);
+    expect(JSON.stringify(backup)).not.toContain('not-plaintext');
+
+    await vault.rotatePassphrase('first passphrase', 'next passphrase');
+    await expect(vault.getJson('identity', 'first passphrase')).rejects.toThrow();
+    expect(await vault.getJson('identity', 'next passphrase')).toEqual({ privateKey: 'not-plaintext' });
+  });
 });
